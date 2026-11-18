@@ -1,0 +1,339 @@
+{
+  "source": "SAMPLE",
+  "modules": [
+    {
+      "id": "m-prompt-engineering",
+      "title": "Prompt engineering",
+      "order": 1,
+      "description": "Write prompts that make the task, the boundaries, and the desired output clear.",
+      "track": "Generative AI",
+      "lessons": [
+        {
+          "id": "prompt-patterns",
+          "title": "Prompt anatomy & reusable patterns",
+          "order": 1,
+          "content": "## Anatomy of a useful prompt\nA useful prompt states the task, gives the context needed to do it, and names the desired output format. A concrete instruction like “Return three bullet points for a beginner” is more testable than “Make this good.” Constraints describe what not to do and how much to produce.\n\n## Few-shot examples\nFew-shot prompting includes a small number of input–output examples. Use examples to demonstrate the pattern or format, not to sneak in extra rules. Choose a normal case and one edge case so the model sees how the format holds up when input is unusual.\n\n## Delimiters and untrusted input\nDelimiters mark where reference data begins and ends. The trusted system message defines what the application does; user text and attached documents stay in an untrusted data field. Delimiters help the model see the boundary but do not replace validation and permissions.\n\n## Iterating with a rubric\nChange one part of the prompt at a time, then compare it on the same test cases. An explicit rubric can score whether a response matches the requested format and stays within the available evidence.",
+          "topics": ["Prompt engineering"],
+          "estMinutes": 25,
+          "quizzes": [
+            {
+              "id": "q-01",
+              "question": {
+                "type": "mcq",
+                "prompt": "Which prompt element states what shape the answer should take?",
+                "topic": "Prompt engineering",
+                "options": [
+                  "Output format",
+                  "Sampling temperature",
+                  "Authentication header"
+                ],
+                "answer": "Output format"
+              }
+            },
+            {
+              "id": "q-02",
+              "question": {
+                "type": "short",
+                "prompt": "Why supply a few input–output examples?",
+                "topic": "Prompt engineering",
+                "answer": "To demonstrate the desired pattern or format.",
+                "rubric": "Credit answers explaining that examples show the expected structure or behavior; a vague claim that they improve everything is insufficient."
+              }
+            },
+            {
+              "id": "q-03",
+              "question": {
+                "type": "mcq",
+                "prompt": "Where should a document supplied by a learner go?",
+                "topic": "Prompt engineering",
+                "options": [
+                  "An untrusted data field",
+                  "Ahead of trusted application rules",
+                  "The API key field"
+                ],
+                "answer": "An untrusted data field"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m-llm-apis",
+      "title": "LLM APIs",
+      "order": 2,
+      "description": "Work with messages, structured responses, streaming, and safe failure recovery.",
+      "track": "Generative AI",
+      "lessons": [
+        {
+          "id": "llm-apis",
+          "title": "Structured outputs with LLM APIs",
+          "order": 1,
+          "content": "## Server-side requests\nAn application keeps model credentials on its server. The browser sends a bounded request to the server, which checks the learner’s session and quota before calling the API. Never put private provider credentials in public JavaScript.\n\n## JSON schema and validation\nStructured output asks the provider for JSON matching a declared schema. A JSON schema can specify property names and expected types. Always validate the returned object on the server, and separately check business rules such as whether an ID exists.\n\n## Streaming and first token\nA streaming response sends small chunks as the model generates text. Time to first token measures how long the learner waits before seeing the first usable text, not how long the entire response takes. A stream should handle interruption and show incomplete output as such.\n\n## Timeout, retry, and backoff\nRetry transient failures such as rate limits or temporary server errors with bounded exponential backoff and jitter. Avoid retrying invalid credentials or malformed requests. After streaming has shown text, do not silently replay the request.",
+          "topics": ["LLM APIs"],
+          "estMinutes": 35,
+          "quizzes": [
+            {
+              "id": "q-01",
+              "question": {
+                "type": "mcq",
+                "prompt": "What still needs checking after a response matches a JSON schema?",
+                "topic": "LLM APIs",
+                "options": [
+                  "Business rules such as whether IDs exist",
+                  "Only the font size",
+                  "Nothing at all"
+                ],
+                "answer": "Business rules such as whether IDs exist"
+              }
+            },
+            {
+              "id": "q-02",
+              "question": {
+                "type": "short",
+                "prompt": "What does time to first token measure?",
+                "topic": "LLM APIs",
+                "answer": "Time until the first usable response text is visible.",
+                "rubric": "Require the delay to the first generated text, not the full response time."
+              }
+            },
+            {
+              "id": "q-03",
+              "question": {
+                "type": "mcq",
+                "prompt": "Which error is a good candidate for bounded retry?",
+                "topic": "LLM APIs",
+                "options": [
+                  "A transient rate limit",
+                  "A revoked credential",
+                  "An invalid schema"
+                ],
+                "answer": "A transient rate limit"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m-rag",
+      "title": "Retrieval-augmented generation",
+      "order": 3,
+      "description": "Find useful evidence in lesson material before generating an answer.",
+      "track": "Generative AI",
+      "lessons": [
+        {
+          "id": "rag",
+          "title": "Grounding answers with RAG",
+          "order": 1,
+          "content": "## Retrieval before generation\nRetrieval-augmented generation (RAG) looks up passages related to a question before a model writes an answer. The application sends only the most relevant retrieved passages, along with the question, so the answer can draw on the lesson rather than general recall. Retrieval finds evidence; generation explains it.\n\n## Chunking for retrieval\nChunking breaks a lesson into smaller sections for retrieval. Start with headings so each chunk keeps a coherent idea. Pick a size that balances useful context with precise matching: very large chunks add noise, while very small ones can lose the explanation around a term.\n\n## Embeddings and cosine similarity\nAn embedding maps text to a numeric vector. Compare a query embedding with stored chunk embeddings from the same model. Cosine similarity uses the angle between vectors to rank candidate chunks; it is not proof that a passage supports a claim.\n\n## Citations and abstention\nKeep each chunk identifier next to its source section. A citation should link to real evidence for the answer; the server can reject citation IDs that were not retrieved. If the passages do not cover the question, politely abstain rather than inventing an answer or a source.",
+          "topics": ["RAG"],
+          "estMinutes": 40,
+          "quizzes": [
+            {
+              "id": "q-01",
+              "question": {
+                "type": "mcq",
+                "prompt": "Which step finds relevant lesson sections before an answer is written?",
+                "topic": "RAG",
+                "options": ["Retrieval", "Generation", "Grading"],
+                "answer": "Retrieval"
+              }
+            },
+            {
+              "id": "q-02",
+              "question": {
+                "type": "short",
+                "prompt": "Why keep a chunk identifier next to its source section?",
+                "topic": "RAG",
+                "answer": "To cite the exact source section.",
+                "rubric": "Credit an answer that connects the identifier to verifiable source location or traceable citations."
+              }
+            },
+            {
+              "id": "q-03",
+              "question": {
+                "type": "mcq",
+                "prompt": "What should the tutor do when no passage supports an answer?",
+                "topic": "RAG",
+                "options": [
+                  "Say the lesson does not cover it",
+                  "Invent a citation",
+                  "Select a random chunk"
+                ],
+                "answer": "Say the lesson does not cover it"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m-langchain",
+      "title": "LangChain workflows",
+      "order": 4,
+      "description": "Understand how a retriever, prompt, model, and parser compose into a chain.",
+      "track": "Generative AI",
+      "lessons": [
+        {
+          "id": "langchain",
+          "title": "Composable chains and retrievers",
+          "order": 1,
+          "content": "## Runnable composition\nA runnable pipeline composes clearly defined steps. A retriever looks up evidence, a prompt template formats context, a model writes the response, and a parser checks the output. Typed inputs and outputs help you test each step independently.\n\n## Retrievers and document metadata\nA retriever accepts a search query and returns relevant documents or passages. Store document metadata such as source IDs for traceability. Filtering by lesson before ranking keeps the search inside the selected lesson.\n\n## Testing each stage\nTest a chain with fixed input and known evidence. If the final answer fails, inspect intermediate results to see whether retrieval missed the evidence or the generation step misused it. Keep interfaces stable so a model or retriever can be swapped without rewriting the chain.",
+          "topics": ["LangChain"],
+          "estMinutes": 35,
+          "quizzes": [
+            {
+              "id": "q-01",
+              "question": {
+                "type": "mcq",
+                "prompt": "Which component returns relevant passages for a search query?",
+                "topic": "LangChain",
+                "options": ["Retriever", "Output parser", "Prompt template"],
+                "answer": "Retriever"
+              }
+            },
+            {
+              "id": "q-02",
+              "question": {
+                "type": "short",
+                "prompt": "Why keep source metadata with documents?",
+                "topic": "LangChain",
+                "answer": "To trace a passage back to its source.",
+                "rubric": "Require reference to traceability, section IDs, or citations."
+              }
+            },
+            {
+              "id": "q-03",
+              "question": {
+                "type": "mcq",
+                "prompt": "What helps locate a failure inside a chain?",
+                "topic": "LangChain",
+                "options": [
+                  "Inspecting intermediate results",
+                  "Removing all tests",
+                  "Changing every component at once"
+                ],
+                "answer": "Inspecting intermediate results"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m-evaluation",
+      "title": "AI evaluation",
+      "order": 5,
+      "description": "Measure groundedness, failures, and latency with a labelled set.",
+      "track": "Generative AI",
+      "lessons": [
+        {
+          "id": "evaluation",
+          "title": "Evaluating grounded answers",
+          "order": 1,
+          "content": "## Labelled evaluation cases\nBuild a labelled evaluation set with a clear expected outcome for each case. Include realistic in-scope questions and off-topic questions. Keep development examples separate from an independent test set when estimating real generalization.\n\n## Citation correctness\nCitation correctness asks whether the cited section actually supports the response. An existing citation ID is only a structural check. Human reviewers can also check claim support, which requires reading the section and the answer together.\n\n## Latency percentiles\nA median describes a typical run, while the 95th percentile highlights slow requests. Label the environment and warm-up conditions when reporting latency. Keep diagnostic outcomes and failures rather than reporting only successful runs.",
+          "topics": ["Evaluation"],
+          "estMinutes": 30,
+          "quizzes": [
+            {
+              "id": "q-01",
+              "question": {
+                "type": "mcq",
+                "prompt": "What is stronger evidence than checking a citation ID exists?",
+                "topic": "Evaluation",
+                "options": [
+                  "Checking that the cited section supports the claim",
+                  "Counting punctuation",
+                  "Measuring only total tokens"
+                ],
+                "answer": "Checking that the cited section supports the claim"
+              }
+            },
+            {
+              "id": "q-02",
+              "question": {
+                "type": "short",
+                "prompt": "Why report a high latency percentile?",
+                "topic": "Evaluation",
+                "answer": "To show slow-tail requests that an average can hide.",
+                "rubric": "Credit references to slower cases or tail experience."
+              }
+            },
+            {
+              "id": "q-03",
+              "question": {
+                "type": "mcq",
+                "prompt": "What belongs in a tutor evaluation set?",
+                "topic": "Evaluation",
+                "options": [
+                  "In-scope and off-topic questions",
+                  "Only past successes",
+                  "User credentials"
+                ],
+                "answer": "In-scope and off-topic questions"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m-deployment",
+      "title": "Deployment",
+      "order": 6,
+      "description": "Ship your learning tool with health checks, quotas, and a rollback plan.",
+      "track": "Generative AI",
+      "lessons": [
+        {
+          "id": "deployment",
+          "title": "Shipping an AI application",
+          "order": 1,
+          "content": "## Environments and secrets\nSeparate local development, staging, and production environments. Store credentials in platform environment variables or a secrets manager. Values compiled into public browser bundles are not secrets. Configure each environment independently and rotate credentials when exposed.\n\n## Health and observability\nA health check reports whether the application is running; readiness can additionally test a required dependency. Log model, token usage, outcome, and latency without including sensitive prompts or identity tokens.\n\n## Guardrails and rollback\nPer-user quotas and token caps protect the budget. Publish tested changes with a version you can roll back to if errors increase. After release, watch failure rates and latency so you can catch regressions before they spread.",
+          "topics": ["Deployment"],
+          "estMinutes": 30,
+          "quizzes": [
+            {
+              "id": "q-01",
+              "question": {
+                "type": "mcq",
+                "prompt": "Where should private provider credentials be set?",
+                "topic": "Deployment",
+                "options": [
+                  "Server environment variables",
+                  "Client bundle",
+                  "Browser console"
+                ],
+                "answer": "Server environment variables"
+              }
+            },
+            {
+              "id": "q-02",
+              "question": {
+                "type": "short",
+                "prompt": "How does readiness differ from a basic health check?",
+                "topic": "Deployment",
+                "answer": "Readiness checks whether required dependencies are available.",
+                "rubric": "Credit references to ability to serve requests or checking required dependencies."
+              }
+            },
+            {
+              "id": "q-03",
+              "question": {
+                "type": "mcq",
+                "prompt": "What helps limit unexpected model spend?",
+                "topic": "Deployment",
+                "options": [
+                  "Per-user quotas and token caps",
+                  "Printing keys in logs",
+                  "Removing request limits"
+                ],
+                "answer": "Per-user quotas and token caps"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

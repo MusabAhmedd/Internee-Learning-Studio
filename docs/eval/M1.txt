@@ -1,0 +1,16 @@
+$ curl -fsS http://127.0.0.1:3000/api/health
+{"status":"ok"}
+$ npm run test:e2e -- onboarding.spec.ts
+
+> internee-learning-studio@1.0.0 test:e2e
+> node --env-file-if-exists=.env.local node_modules/@playwright/test/cli.js test onboarding.spec.ts
+
+
+Running 1 test using 1 worker
+
+(node:5133) MetadataLookupWarning: received unexpected error = All promises were rejected code = 401, ENOTFOUND
+(Use `node --trace-warnings ...` to show where the warning was created)
+Firestore: profile matched before and after browser reload.
+  ✓  1 tests/e2e/onboarding.spec.ts:6:1 › email signup persists an onboarding profile in Firestore across reload (4.1s)
+
+  1 passed (5.8s)

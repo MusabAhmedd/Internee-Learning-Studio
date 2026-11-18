@@ -1,0 +1,28 @@
+$ npm run embed -- --verify
+
+> internee-learning-studio@1.0.0 embed
+> node --env-file-if-exists=.env.local --import tsx scripts/embed-lessons.ts --verify
+
+(node:5794) MetadataLookupWarning: received unexpected error = All promises were rejected code = 401, ENOTFOUND
+(Use `node --trace-warnings ...` to show where the warning was created)
+Index: 21 sections; 0 embeddings reused; model=local-hashed-terms-v1.
+Query top match: rag--01 — Retrieval before generation (expected).
+$ npm run embed -- --verify (cache retest)
+
+> internee-learning-studio@1.0.0 embed
+> node --env-file-if-exists=.env.local --import tsx scripts/embed-lessons.ts --verify
+
+(node:5827) MetadataLookupWarning: received unexpected error = All promises were rejected code = 401, ENOTFOUND
+(Use `node --trace-warnings ...` to show where the warning was created)
+Index: 21 sections; 21 embeddings reused; model=local-hashed-terms-v1.
+Query top match: rag--01 — Retrieval before generation (expected).
+$ npm run typecheck && npm run lint
+
+> internee-learning-studio@1.0.0 typecheck
+> next typegen && tsc --noEmit
+
+Generating route types...
+✓ Types generated successfully
+
+> internee-learning-studio@1.0.0 lint
+> eslint . --max-warnings=0

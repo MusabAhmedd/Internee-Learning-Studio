@@ -1,0 +1,3 @@
+NOT RUN: live Gemini API (key not supplied), hosted Auth/Firestore/Storage and Google OAuth,
+GitHub Actions on a remote branch, Vercel deployment, Docker/Compose runtime.
+Local tests and evaluation use Firebase emulators and the explicit no-key SAMPLE provider.

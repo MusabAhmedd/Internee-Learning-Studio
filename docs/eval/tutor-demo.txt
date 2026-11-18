@@ -1,0 +1,51 @@
+$ npm run eval:tutor
+
+> internee-learning-studio@1.0.0 eval:tutor
+> node --env-file-if-exists=.env.local --import tsx scripts/eval-tutor.ts
+
+SAMPLE tutor evaluation; provider=demo; 20 cases. HTTP route warmed with GET; model not pre-warmed.
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":33,"ms":43}
+01 PASS lesson=prompt-patterns expected=prompt-patterns--01 cited=prompt-patterns--01 first_ms=42.7
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":36,"ms":51}
+02 PASS lesson=prompt-patterns expected=prompt-patterns--02 cited=prompt-patterns--02 first_ms=43.5
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":21,"ms":30}
+03 PASS lesson=prompt-patterns expected=prompt-patterns--03 cited=prompt-patterns--03 first_ms=27.9
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":23,"ms":30}
+04 PASS lesson=llm-apis expected=llm-apis--01 cited=llm-apis--01 first_ms=28.7
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":27,"ms":36}
+05 PASS lesson=llm-apis expected=llm-apis--02 cited=llm-apis--02 first_ms=32.3
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":31,"ms":40}
+06 PASS lesson=llm-apis expected=llm-apis--03 cited=llm-apis--03 first_ms=38.2
+07 PASS lesson=rag expected=rag--01 cited=rag--01 first_ms=29.3
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":23,"ms":35}
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":23,"ms":41}
+08 PASS lesson=rag expected=rag--02 cited=rag--02 first_ms=29.8
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":26,"ms":35}
+09 PASS lesson=rag expected=rag--03 cited=rag--03 first_ms=32.7
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":22,"ms":30}
+10 PASS lesson=rag expected=rag--04 cited=rag--04 first_ms=28.2
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":20,"ms":26}
+11 PASS lesson=langchain expected=langchain--01 cited=langchain--01 first_ms=24.4
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":23,"ms":33}
+12 PASS lesson=langchain expected=langchain--02 cited=langchain--02 first_ms=29.2
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":20,"ms":26}
+13 PASS lesson=evaluation expected=evaluation--01 cited=evaluation--01 first_ms=24.7
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":21,"ms":28}
+14 PASS lesson=evaluation expected=evaluation--03 cited=evaluation--03 first_ms=26.0
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":20,"ms":27}
+15 PASS lesson=deployment expected=deployment--02 cited=deployment--02 first_ms=25.1
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":23,"ms":30}
+16 PASS lesson=deployment expected=deployment--03 cited=deployment--03 first_ms=28.4
+17 PASS lesson=rag expected=abstain cited=none first_ms=25.4
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":20,"ms":32}
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":31,"ms":42}
+18 PASS lesson=prompt-patterns expected=abstain cited=none first_ms=45.5
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":15,"ms":24}
+19 PASS lesson=rag expected=abstain cited=none first_ms=20.2
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":22,"ms":30}
+20 PASS lesson=deployment expected=abstain cited=none first_ms=27.1
+In scope with correct citation: 100.0% (16/16)
+In scope with a citation: 100.0% (16/16)
+Out-of-scope abstention: 100.0% (4/4)
+First visible text p50=28.4 ms; p95=43.5 ms; errors=0.
+Gemini live groundedness and latency: NOT RUN. Citation-label agreement does not measure full factual support.

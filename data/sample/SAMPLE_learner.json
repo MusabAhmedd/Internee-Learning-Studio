@@ -1,0 +1,93 @@
+{
+  "label": "SAMPLE",
+  "profile": {
+    "displayName": "Noor Malik",
+    "track": "Generative AI",
+    "level": "Beginner",
+    "weeklyHours": 5,
+    "goal": "Build a grounded AI tutor that can cite sources and explain concepts clearly."
+  },
+  "completions": [
+    { "lessonId": "prompt-patterns", "daysAgo": 2, "studySeconds": 1380 },
+    { "lessonId": "llm-apis", "daysAgo": 1, "studySeconds": 1860 }
+  ],
+  "attempts": [
+    {
+      "lessonId": "prompt-patterns",
+      "topic": "Prompt engineering",
+      "daysAgo": 2,
+      "correct": true,
+      "hintsUsed": 0
+    },
+    {
+      "lessonId": "prompt-patterns",
+      "topic": "Prompt engineering",
+      "daysAgo": 2,
+      "correct": true,
+      "hintsUsed": 0
+    },
+    {
+      "lessonId": "prompt-patterns",
+      "topic": "Prompt engineering",
+      "daysAgo": 2,
+      "correct": true,
+      "hintsUsed": 0
+    },
+    {
+      "lessonId": "prompt-patterns",
+      "topic": "Prompt engineering",
+      "daysAgo": 2,
+      "correct": true,
+      "hintsUsed": 0
+    },
+    {
+      "lessonId": "llm-apis",
+      "topic": "LLM APIs",
+      "daysAgo": 1,
+      "correct": true,
+      "hintsUsed": 0
+    },
+    {
+      "lessonId": "llm-apis",
+      "topic": "LLM APIs",
+      "daysAgo": 1,
+      "correct": true,
+      "hintsUsed": 0
+    },
+    {
+      "lessonId": "llm-apis",
+      "topic": "LLM APIs",
+      "daysAgo": 1,
+      "correct": true,
+      "hintsUsed": 0
+    },
+    {
+      "lessonId": "rag",
+      "topic": "RAG",
+      "daysAgo": 1,
+      "correct": true,
+      "hintsUsed": 0
+    },
+    {
+      "lessonId": "rag",
+      "topic": "RAG",
+      "daysAgo": 0,
+      "correct": false,
+      "hintsUsed": 0
+    },
+    {
+      "lessonId": "rag",
+      "topic": "RAG",
+      "daysAgo": 0,
+      "correct": false,
+      "hintsUsed": 0
+    },
+    {
+      "lessonId": "langchain",
+      "topic": "LangChain",
+      "daysAgo": 0,
+      "correct": true,
+      "hintsUsed": 0
+    }
+  ]
+}

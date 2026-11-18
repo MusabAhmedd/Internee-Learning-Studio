@@ -1,0 +1,34 @@
+$ npm run seed
+
+> internee-learning-studio@1.0.0 seed
+> node --env-file-if-exists=.env.local --import tsx scripts/seed.ts
+
+(node:10479) MetadataLookupWarning: received unexpected error = All promises were rejected code = 401, ENOTFOUND
+(Use `node --trace-warnings ...` to show where the warning was created)
+SAMPLE: published revision 27d110231119; 6 modules, 6 lessons, 18 quiz items.
+$ npm run embed -- --verify
+
+> internee-learning-studio@1.0.0 embed
+> node --env-file-if-exists=.env.local --import tsx scripts/embed-lessons.ts --verify
+
+(node:10509) MetadataLookupWarning: received unexpected error = All promises were rejected code = 401, ENOTFOUND
+(Use `node --trace-warnings ...` to show where the warning was created)
+Index: 21 sections; 0 embeddings reused; model=local-hashed-terms-v1.
+Query top match: rag--01 — Retrieval before generation (expected).
+$ curl -fsS http://127.0.0.1:3000/api/health
+{"status":"ok"}
+$ npm run test:e2e -- dashboard.spec.ts mobile.spec.ts
+
+> internee-learning-studio@1.0.0 test:e2e
+> node --env-file-if-exists=.env.local node_modules/@playwright/test/cli.js test dashboard.spec.ts mobile.spec.ts
+
+
+Running 2 tests using 1 worker
+
+Heatmap matches SAMPLE attempts: RAG 32%, Prompt engineering 88%; 2 of 6 lessons completed.
+After a low quiz score, opening Study plan automatically refreshed the plan.
+  ✓  1 tests/e2e/dashboard.spec.ts:3:1 › sample cohort heatmap, learner plan, and focused practice reflect the seed (4.3s)
+Mobile: 390px viewport, no horizontal overflow, keyboard menu and route navigation passed.
+  ✓  2 tests/e2e/mobile.spec.ts:3:1 › mobile navigation is keyboard operable without horizontal overflow (865ms)
+
+  2 passed (5.8s)

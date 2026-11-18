@@ -1,0 +1,32 @@
+$ npm run test:unit
+
+> internee-learning-studio@1.0.0 test:unit
+> node --import tsx --test tests/mastery.test.ts
+
+✔ mastery uses the exact weighted update for correct and incorrect answers (0.981694ms)
+✔ hint penalty stops at three and the score stays within [0, 1] (0.190887ms)
+✔ weak areas require at least three attempts and strictly less than 0.5 (0.182888ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 401.167015
+$ npm run test:e2e -- onboarding.spec.ts
+
+> internee-learning-studio@1.0.0 test:e2e
+> node --env-file-if-exists=.env.local node_modules/@playwright/test/cli.js test onboarding.spec.ts
+
+
+Running 1 test using 1 worker
+
+(node:7839) MetadataLookupWarning: received unexpected error = All promises were rejected code = 401, ENOTFOUND
+(Use `node --trace-warnings ...` to show where the warning was created)
+Firestore: profile matched before and after browser reload.
+Browser: module catalog and SAMPLE lesson rendered.
+Browser: correct quiz answer recorded in Firestore.
+  ✓  1 tests/e2e/onboarding.spec.ts:6:1 › email signup persists an onboarding profile in Firestore across reload (3.7s)
+
+  1 passed (5.4s)

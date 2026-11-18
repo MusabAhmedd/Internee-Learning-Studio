@@ -1,0 +1,25 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+    function signedIn() { return request.auth != null; }
+    function owns(uid) { return signedIn() && request.auth.uid == uid; }
+    function ownsResource() { return signedIn() && resource.data.uid == request.auth.uid; }
+
+    // Client writes are denied even for owners: authenticated route handlers validate and persist mutations.
+    match /users/{uid} {
+      allow get: if owns(uid);
+      match /progress/{lessonId} { allow get, list: if owns(uid); }
+    }
+    match /modules/{moduleId} {
+      allow get, list: if signedIn();
+      match /lessons/{lessonId} { allow get, list: if signedIn(); }
+      // Nested quizzes are deliberately not matched: answer banks are server-only.
+    }
+    match /attempts/{id} { allow get, list: if ownsResource(); }
+    match /mastery/{id} { allow get, list: if ownsResource(); }
+    match /chats/{id} { allow get, list: if ownsResource(); }
+    match /plans/{uid} { allow get: if owns(uid) && ownsResource(); }
+    match /summaries/{uid} { allow get: if owns(uid) && ownsResource(); }
+    match /{document=**} { allow read, write: if false; }
+  }
+}

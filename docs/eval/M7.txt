@@ -1,0 +1,12 @@
+$ npm run test:e2e -- dashboard.spec.ts
+
+> internee-learning-studio@1.0.0 test:e2e
+> node --env-file-if-exists=.env.local node_modules/@playwright/test/cli.js test dashboard.spec.ts
+
+
+Running 1 test using 1 worker
+
+Heatmap matches SAMPLE attempts: RAG 32%, Prompt engineering 88%; 2 of 6 lessons completed.
+  ✓  1 tests/e2e/dashboard.spec.ts:3:1 › sample cohort heatmap, learner plan, and focused practice reflect the seed (3.3s)
+
+  1 passed (4.2s)

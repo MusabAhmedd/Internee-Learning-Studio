@@ -1,0 +1,63 @@
+{
+  "name": "internee-learning-studio",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": "24.x"
+  },
+  "packageManager": "npm@11.19.1",
+  "scripts": {
+    "dev": "next dev --hostname 0.0.0.0",
+    "build": "next build",
+    "start": "node --env-file-if-exists=.env.local scripts/start.mjs",
+    "lint": "eslint . --max-warnings=0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "next typegen && tsc --noEmit",
+    "emulators": "firebase emulators:start --project demo-learning-studio --only auth,firestore,storage",
+    "test:e2e": "node --env-file-if-exists=.env.local node_modules/@playwright/test/cli.js test",
+    "seed": "node --env-file-if-exists=.env.local --import tsx scripts/seed.ts",
+    "embed": "node --env-file-if-exists=.env.local --import tsx scripts/embed-lessons.ts",
+    "test:tutor": "node --env-file-if-exists=.env.local --import tsx scripts/tutor-probe.ts",
+    "test:unit": "node --import tsx --test tests/mastery.test.ts tests/plan.test.ts",
+    "admin:grant": "node --env-file-if-exists=.env.local --import tsx scripts/grant-admin.ts",
+    "test:rules": "node --env-file-if-exists=.env.local --import tsx --test tests/rules.test.ts",
+    "test:api": "node --env-file-if-exists=.env.local --import tsx --test tests/api.test.ts",
+    "eval:tutor": "node --env-file-if-exists=.env.local --import tsx scripts/eval-tutor.ts",
+    "ci:integration": "firebase emulators:exec --project demo-learning-studio --only auth,firestore,storage \"node --env-file-if-exists=.env.local scripts/ci-integration.mjs\""
+  },
+  "dependencies": {
+    "@radix-ui/react-slot": "1.5.0",
+    "class-variance-authority": "0.7.1",
+    "clsx": "2.1.1",
+    "firebase": "13.4.0",
+    "firebase-admin": "14.5.1",
+    "lucide-react": "1.75.0",
+    "next": "16.4.6",
+    "openai": "7.60.0",
+    "pdf-lib": "1.17.1",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "tailwind-merge": "3.7.0",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "6.0.0",
+    "@playwright/test": "1.65.1",
+    "@tailwindcss/postcss": "4.3.5",
+    "@types/node": "24.19.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.4.6",
+    "firebase-tools": "15.36.0",
+    "postcss": "8.5.33",
+    "prettier": "3.10.1",
+    "tailwindcss": "4.3.5",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3"
+  },
+  "overrides": {
+    "@grpc/grpc-js": "1.14.7"
+  }
+}

@@ -1,0 +1,26 @@
+$ npm run test:rules
+
+> internee-learning-studio@1.0.0 test:rules
+> node --env-file-if-exists=.env.local --import tsx --test tests/rules.test.ts
+
+✔ user A can read their own profile and cannot read user B profile or progress (942.05846ms)
+✔ user A cannot read user B attempts, mastery, plan, summary, or chat (176.933262ms)
+✔ answer keys and embeddings stay private; a signed-in learner may read published lessons (93.293661ms)
+[2026-11-18T20:00:39.945Z]  @firebase/firestore: Firestore (13.4.0): GrpcConnection RPC 'Write' stream 0x53f7b875 error. Code: 7 Message: 7 PERMISSION_DENIED:
+false for 'create' @ L23, false for 'update' @ L23
+[2026-11-18T20:00:39.958Z]  @firebase/firestore: Firestore (13.4.0): GrpcConnection RPC 'Write' stream 0x53f7b876 error. Code: 7 Message: 7 PERMISSION_DENIED:
+false for 'create' @ L23, false for 'update' @ L23
+[2026-11-18T20:00:39.979Z]  @firebase/firestore: Firestore (13.4.0): GrpcConnection RPC 'Write' stream 0x53f7b877 error. Code: 7 Message: 7 PERMISSION_DENIED:
+false for 'create' @ L23, false for 'update' @ L23
+[2026-11-18T20:00:40.020Z]  @firebase/firestore: Firestore (13.4.0): GrpcConnection RPC 'Write' stream 0x53f7b878 error. Code: 7 Message: 7 PERMISSION_DENIED:
+false for 'create' @ L23, false for 'update' @ L23
+✔ client writes cannot forge profile changes, attempts, or imported curriculum, even with admin claim (125.736891ms)
+✔ Storage archives are private and browser uploads cannot bypass the admin route (228.036049ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2239.046972

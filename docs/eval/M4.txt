@@ -1,0 +1,9 @@
+$ npm run test:tutor
+
+> internee-learning-studio@1.0.0 test:tutor
+> node --env-file-if-exists=.env.local --import tsx scripts/tutor-probe.ts
+
+(node:6201) MetadataLookupWarning: received unexpected error = All promises were rejected code = 401, ENOTFOUND
+(Use `node --trace-warnings ...` to show where the warning was created)
+Provider: demo; warmed local HTTP first text: 89.1 ms (< 2000 ms).
+Citations resolved: rag--01. Unauthenticated request returned 401.
