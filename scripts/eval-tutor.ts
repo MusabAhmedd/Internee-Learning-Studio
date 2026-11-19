@@ -33,6 +33,7 @@ async function main() {
   try {
     const headers = {
       Authorization: `Bearer ${session.token}`,
+      ...(session.appCheck ? { "X-Firebase-AppCheck": session.appCheck } : {}),
       "Content-Type": "application/json",
     };
     const url = `${origin}/api/tutor`;

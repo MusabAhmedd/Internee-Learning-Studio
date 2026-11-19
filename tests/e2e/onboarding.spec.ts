@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { expect, test } from "@playwright/test";
 import { adminAuth, db, isDemo } from "../../lib/firebase-admin";
-import { profileSchema } from "../../lib/schemas";
+import { profileSchema, progressSchema } from "../../lib/schemas";
 
 test("email signup persists an onboarding profile in Firestore across reload", async ({
   page,
@@ -24,6 +24,7 @@ test("email signup persists an onboarding profile in Firestore across reload", a
   ).toBeVisible();
   await page.getByLabel("Display name").fill("Jury Learner");
   await page.getByLabel("Weekly study hours").fill("6");
+  await page.getByLabel("Learning time zone").selectOption("Asia/Karachi");
   await page
     .getByLabel("Learning goal")
     .fill("Build a grounded tutor with clear citations.");
@@ -40,6 +41,7 @@ test("email signup persists an onboarding profile in Firestore across reload", a
     displayName: "Jury Learner",
     track: "Generative AI",
     weeklyHours: 6,
+    timeZone: "Asia/Karachi",
     goal: "Build a grounded tutor with clear citations.",
   });
   await page.reload();
@@ -47,6 +49,7 @@ test("email signup persists an onboarding profile in Firestore across reload", a
     page.getByRole("heading", { name: /Welcome.*Jury/ }),
   ).toBeVisible();
   expect(await saved()).toEqual(before);
+  await expect(page.locator(".date-chip")).toContainText("Asia/Karachi");
   console.log("Firestore: profile matched before and after browser reload.");
   await page.getByRole("link", { name: "Modules", exact: true }).click();
   await expect(
@@ -78,4 +81,14 @@ test("email signup persists an onboarding profile in Firestore across reload", a
     page.getByText("Matches the sample answer’s key concepts."),
   ).toBeVisible();
   console.log("Browser: sample short-answer feedback returned.");
+  await page.waitForTimeout(1100);
+  await page.getByRole("button", { name: "Mark lesson complete" }).click();
+  await expect(
+    page.getByText("Lesson completed", { exact: true }),
+  ).toBeVisible();
+  const mark = progressSchema.parse(
+    (await db().doc(`users/${user.uid}/progress/prompt-patterns`).get()).data(),
+  );
+  expect(mark.completedAt).toBeTruthy();
+  expect(mark.studySeconds).toBeGreaterThanOrEqual(1);
 });

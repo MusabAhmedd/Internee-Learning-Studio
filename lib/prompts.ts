@@ -8,7 +8,11 @@ export function systemPrompt(name: PromptName) {
   const existing = cache.get(name);
   if (existing) return existing;
   const pending = readFile(
-    join(process.cwd(), "prompts", `${name}.v1.md`),
+    join(
+      process.cwd(),
+      "prompts",
+      `${name}.${name === "tutor" ? "v2" : "v1"}.md`,
+    ),
     "utf8",
   ).catch((error) => {
     cache.delete(name);

@@ -1,5 +1,6 @@
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { dashboardFor } from "@/lib/dashboard";
+import { localDate } from "@/lib/learning-dates";
 import { authenticated, HttpError } from "@/lib/http";
 export const GET = authenticated(async (_request, claims) => {
   const { board, profile, done } = await dashboardFor(claims.uid);
@@ -81,13 +82,17 @@ export const GET = authenticated(async (_request, claims) => {
   line(profile.displayName, 241, 35, true, violet);
   line(`for completing the ${profile.track} learning track`, 196, 15, false);
   line(`${board.completed} lessons completed`, 169, 13, false, soft);
-  const completedAt =
-    done
-      .map((mark) => mark.completedAt)
-      .sort()
-      .at(-1)
-      ?.slice(0, 10) ?? "";
-  line(`Completed ${completedAt} (UTC)`, 111, 12, true);
+  const completedAt = done
+    .flatMap((mark) => (mark.completedAt ? [mark.completedAt] : []))
+    .sort()
+    .at(-1);
+  if (completedAt)
+    line(
+      `Completed ${localDate(completedAt, profile.timeZone)} (${profile.timeZone})`,
+      111,
+      12,
+      true,
+    );
   line(
     board.sample
       ? "Sample training artifact - not an official Internee.pk credential."

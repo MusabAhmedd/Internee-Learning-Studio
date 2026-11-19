@@ -1,3 +1,4 @@
+import { abuseEvent } from "@/lib/abuse-telemetry";
 import { requireAdmin } from "@/lib/admin";
 import {
   bundleSchema,
@@ -7,7 +8,7 @@ import {
 } from "@/lib/catalog";
 import { bucket } from "@/lib/firebase-admin";
 import { authenticated, HttpError, json, readJson } from "@/lib/http";
-import { takeAiQuota } from "@/lib/limits";
+import { takeApiQuota } from "@/lib/limits";
 import { importResponseSchema } from "@/lib/schemas";
 export const maxDuration = 45;
 export const POST = authenticated(async (request, claims) => {
@@ -19,6 +20,7 @@ export const POST = authenticated(async (request, claims) => {
       "INVALID_FILENAME",
       "Use a .json filename with letters, digits, dots, underscores, or hyphens.",
     );
+  await takeApiQuota(claims.uid, "admin-import");
   const bundle = await readJson(request, bundleSchema, CATALOG_MAX_BYTES);
   if (bundle.source === "SAMPLE" && !name.startsWith("SAMPLE_"))
     throw new HttpError(
@@ -26,7 +28,6 @@ export const POST = authenticated(async (request, claims) => {
       "SAMPLE_LABEL",
       "A sample bundle filename must start with SAMPLE_.",
     );
-  await takeAiQuota(claims.uid);
   // The object is private; publish only validated plain JSON. Content-addressed archives are idempotent.
   await bucket()
     .file(`curricula/${revisionOf(bundle)}.json`)
@@ -35,6 +36,7 @@ export const POST = authenticated(async (request, claims) => {
       resumable: false,
     });
   const result = await publishCatalog(bundle);
+  abuseEvent("admin_import", result.unchanged ? "unchanged" : "published");
   return json(
     importResponseSchema.parse({
       ...result,

@@ -1,4 +1,8 @@
+import { abuseEvent } from "./abuse-telemetry";
+import { previewLimiter } from "./preview-limits";
 import { isDemo } from "./firebase-admin";
+
+const allowPreview = previewLimiter(240, 60);
 
 // The Auth emulator uses unsigned tokens. This relay is never available with a real project.
 export async function relayAuth(request: Request, path: string) {
@@ -10,6 +14,18 @@ export async function relayAuth(request: Request, path: string) {
     !/^[a-z0-9.-]+:\d+$/i.test(host)
   )
     return new Response(null, { status: 404 });
+  const publicPreview = process.env.DEMO_PUBLIC_PREVIEW === "1";
+  const passwordSignup = path.endsWith("accounts:signUp");
+  const simulatedProvider = path.endsWith("accounts:signInWithIdp");
+  if (publicPreview && path.endsWith("accounts:signInWithCustomToken"))
+    return new Response(null, { status: 404 });
+  if (publicPreview && !allowPreview(passwordSignup || simulatedProvider)) {
+    abuseEvent("rate_limited", "DEMO_AUTH_LIMIT");
+    return Response.json(
+      { error: { message: "TOO_MANY_ATTEMPTS_TRY_LATER" } },
+      { status: 429 },
+    );
+  }
   const url = new URL(request.url);
   if (url.search.length > 4096) return new Response(null, { status: 414 });
   let body: Uint8Array<ArrayBuffer> | undefined;
@@ -41,6 +57,11 @@ export async function relayAuth(request: Request, path: string) {
       },
       signal: AbortSignal.timeout(7000),
     });
+    if (publicPreview && response.ok && (passwordSignup || simulatedProvider))
+      abuseEvent(
+        "account_signal",
+        passwordSignup ? "demo_signup" : "demo_idp_sign_in",
+      );
     if (path === "/emulator/auth/handler" && response.ok) {
       // The bundled Auth Emulator widget already has local styles and event handlers.
       // Drop its optional CDN assets so the simulated popup also works without network access.

@@ -1,0 +1,294 @@
+$ GEMINI_API_KEY= npm run verify:gemini
+
+> internee-learning-studio@1.0.0 verify:gemini
+> node --env-file-if-exists=.env.local scripts/verify-gemini.mjs
+
+NOT RUN: configure GEMINI_API_KEY in the local secret environment.
+Missing-key preflight exit: 2 (expected 2). Live workflows: NOT RUN.
+
+$ npm run format:check
+
+> internee-learning-studio@1.0.0 format:check
+> prettier --check .
+
+Checking formatting...
+All matched files use Prettier code style!
+
+$ npm run lint
+
+> internee-learning-studio@1.0.0 lint
+> eslint . --max-warnings=0
+
+
+$ npm run typecheck
+
+> internee-learning-studio@1.0.0 typecheck
+> next typegen && tsc --noEmit
+
+Generating route types...
+✓ Types generated successfully
+
+$ npm run test:unit
+
+> internee-learning-studio@1.0.0 test:unit
+> node --import tsx --test tests/mastery.test.ts tests/plan.test.ts tests/limits.test.ts
+
+✔ admission is lazy and the embedding and chat share one reservation (0.99761ms)
+✔ a fixed hint uses canonical lesson text and never requests provider admission (8.088033ms)
+✔ mastery uses the exact weighted update for correct and incorrect answers (1.013861ms)
+✔ hint penalty stops at three and the score stays within [0, 1] (0.211457ms)
+✔ weak areas require at least three attempts and strictly less than 0.5 (0.161424ms)
+✔ rejects a fabricated lessonId even when the JSON has the correct shape (6.014661ms)
+✔ enforces prerequisites, seven consecutive dates, exact lesson minutes, and weekly budget (2.624804ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2194.254039
+
+$ npm run build
+
+> internee-learning-studio@1.0.0 build
+> next build
+
+▲ Next.js 16.4.6 (Turbopack)
+- Environments: .env.local
+✓ Running next.config.ts took 39ms
+- Experiments (use with caution):
+  · cpus: 2
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 4.0s
+  Running TypeScript ...
+  Finished TypeScript in 5.7s ...
+  Collecting page data using 2 workers ...
+  Generating static pages using 2 workers (0/25) ...
+  Generating static pages using 2 workers (6/25)
+  Generating static pages using 2 workers (12/25)
+  Generating static pages using 2 workers (18/25)
+✓ Generating static pages using 2 workers (25/25) in 470ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /admin
+├ ƒ /api/admin
+├ ƒ /api/admin/import
+├ ƒ /api/catalog
+├ ƒ /api/certificate
+├ ƒ /api/dashboard
+├ ƒ /api/demo
+├ ƒ /api/health
+├ ƒ /api/lesson/[id]
+├ ƒ /api/plan
+├ ƒ /api/profile
+├ ƒ /api/progress
+├ ƒ /api/quiz/generate
+├ ƒ /api/quiz/grade
+├ ƒ /api/summary
+├ ƒ /api/tutor
+├ ○ /dashboard
+├ ƒ /emulator/auth/[page]
+├ ○ /icon.svg
+├ ƒ /identitytoolkit.googleapis.com/v1/[operation]
+├ ƒ /lesson/[id]
+├ ○ /login
+├ ○ /modules
+├ ○ /onboarding
+├ ○ /plan
+└ ƒ /securetoken.googleapis.com/v1/token
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+
+$ npm run ci:integration
+
+> internee-learning-studio@1.0.0 ci:integration
+> firebase emulators:exec --project demo-learning-studio --only auth,firestore,storage "node --env-file-if-exists=.env.local scripts/ci-integration.mjs"
+
+i  emulators: Starting emulators: auth, firestore, storage
+i  emulators: Detected demo project ID "demo-learning-studio", emulated services will use a demo configuration and attempts to access non-emulated services for this project will fail.
+i  firestore: Firestore Emulator logging to firestore-debug.log
+✔  firestore: Firestore Emulator was started in standard edition.
+✔  firestore: Firestore Emulator UI websocket is running on 9150.
+i  Running script: node --env-file-if-exists=.env.local scripts/ci-integration.mjs
+▲ Next.js 16.4.6
+- Local:         http://localhost:3000
+- Network:       http://0.0.0.0:3000
+✓ Ready in 0ms
+✓ Running next.config took 3ms
+Health check: HTTP 200.
+$ npm run seed
+
+> internee-learning-studio@1.0.0 seed
+> node --env-file-if-exists=.env.local --import tsx scripts/seed.ts
+
+(node:12455) MetadataLookupWarning: received unexpected error = All promises were rejected code = 401, ENOTFOUND
+(Use `node --trace-warnings ...` to show where the warning was created)
+SAMPLE: published revision 27d110231119; 6 modules, 6 lessons, 18 quiz items.
+$ npm run embed -- --verify
+
+> internee-learning-studio@1.0.0 embed
+> node --env-file-if-exists=.env.local --import tsx scripts/embed-lessons.ts --verify
+
+(node:12486) MetadataLookupWarning: received unexpected error = All promises were rejected code = 401, ENOTFOUND
+(Use `node --trace-warnings ...` to show where the warning was created)
+Index: 21 sections; 0 embeddings reused; model=local-hashed-terms-v1.
+Query top match: rag--01 — Retrieval before generation (expected).
+$ npm run test:tutor
+
+> internee-learning-studio@1.0.0 test:tutor
+> node --env-file-if-exists=.env.local --import tsx scripts/tutor-probe.ts
+
+(node:12428) MetadataLookupWarning: received unexpected error = All promises were rejected code = 401, ENOTFOUND
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":105,"ms":136}
+(node:12509) MetadataLookupWarning: received unexpected error = All promises were rejected code = 401, ENOTFOUND
+(Use `node --trace-warnings ...` to show where the warning was created)
+Provider: demo; warmed local HTTP first text: 120.8 ms (< 2000 ms).
+Citations resolved: rag--01. Unauthenticated request returned 401.
+$ npm run test:rules
+
+> internee-learning-studio@1.0.0 test:rules
+> node --env-file-if-exists=.env.local --import tsx --test tests/rules.test.ts
+
+✔ user A can read their own profile and cannot read user B profile or progress (1243.468096ms)
+✔ user A cannot read user B attempts, mastery, plan, summary, or chat (217.844522ms)
+✔ answer keys and embeddings stay private; a signed-in learner may read published lessons (87.771689ms)
+[2026-11-19T18:20:27.904Z]  @firebase/firestore: Firestore (13.4.0): GrpcConnection RPC 'Write' stream 0x1ed59552 error. Code: 7 Message: 7 PERMISSION_DENIED:
+false for 'create' @ L23, false for 'update' @ L23
+[2026-11-19T18:20:27.966Z]  @firebase/firestore: Firestore (13.4.0): GrpcConnection RPC 'Write' stream 0x1ed59553 error. Code: 7 Message: 7 PERMISSION_DENIED:
+false for 'create' @ L23, false for 'update' @ L23
+[2026-11-19T18:20:27.994Z]  @firebase/firestore: Firestore (13.4.0): GrpcConnection RPC 'Write' stream 0x1ed59554 error. Code: 7 Message: 7 PERMISSION_DENIED:
+false for 'create' @ L23, false for 'update' @ L23
+[2026-11-19T18:20:28.034Z]  @firebase/firestore: Firestore (13.4.0): GrpcConnection RPC 'Write' stream 0x1ed59555 error. Code: 7 Message: 7 PERMISSION_DENIED:
+false for 'create' @ L23, false for 'update' @ L23
+✔ client writes cannot forge profile changes, attempts, or imported curriculum, even with admin claim (265.260701ms)
+✔ Storage archives are private and browser uploads cannot bypass the admin route (178.00113ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2626.784332
+$ npm run test:api
+
+> internee-learning-studio@1.0.0 test:api
+> node --env-file-if-exists=.env.local --import tsx --test tests/api.test.ts
+
+✔ feature routes require a Firebase ID token (82.406759ms)
+(node:12576) MetadataLookupWarning: received unexpected error = All promises were rejected code = 401, ENOTFOUND
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"event":"embedding","model":"gemini-embedding-001","status":"AI_DAILY_LIMIT","attempted":false,"upstreamStatus":null,"ms":29,"inputTokens":null,"outputTokens":null,"totalTokens":null}
+{"event":"probe","model":"gemini-3.1-flash-lite","status":"AI_DAILY_LIMIT","attempted":false,"upstreamStatus":null,"ms":2,"inputTokens":null,"outputTokens":null,"totalTokens":null}
+{"event":"tutor_model","model":"gemini-3.1-flash-lite","status":"AI_DAILY_LIMIT","attempted":false,"upstreamStatus":null,"ms":0,"inputTokens":null,"outputTokens":null,"totalTokens":null}
+✔ Gemini admission at its cap blocks embedding and chat before any upstream fetch (250.585836ms)
+✔ demo plans and recaps, including cache hits, do not spend provider quota (392.438578ms)
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":90,"ms":119}
+At the Gemini cap, a fixed hint and repeated MCQ grade succeeded. At the ordinary API cap, grading returned API_RATE_LIMIT.
+Assessment checks: authorized hint recorded once; answer not leaked; cross-user grade rejected.
+✔ quiz keys stay private; hint is Socratic and idempotent grading records a single attempt (458.355541ms)
+With Gemini quota exhausted, admin import succeeded. Its own administrative cap returned ADMIN_IMPORT_RATE_LIMIT.
+Admin checks: non-admin denied; validated JSON archived in Storage; catalog changed and restored.
+✔ admin requires the realtime claim; validates and archives JSON before catalog replacement (1097.483893ms)
+Certificate checks: gated before completion; generated PDF parses as one page.
+✔ completing a track unlocks a valid PDF via the authenticated certificate route (504.559348ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3949.047039
+$ npm run test:e2e
+
+> internee-learning-studio@1.0.0 test:e2e
+> node --env-file-if-exists=.env.local node_modules/@playwright/test/cli.js test
+
+
+Running 4 tests using 1 worker
+
+Heatmap matches SAMPLE attempts: RAG 32%, Prompt engineering 88%; 2 of 6 lessons completed.
+After a low quiz score, opening Study plan automatically refreshed the plan.
+  ✓  1 tests/e2e/dashboard.spec.ts:3:1 › sample cohort heatmap, learner plan, and focused practice reflect the seed (3.8s)
+Simulated provider popup created a Firebase session; hosted Google OAuth was not exercised.
+  ✓  2 tests/e2e/google.spec.ts:4:1 › Google Auth Emulator popup reaches onboarding (1.3s)
+Mobile: 390px viewport, no horizontal overflow, keyboard menu and route navigation passed.
+  ✓  3 tests/e2e/mobile.spec.ts:3:1 › mobile navigation is keyboard operable without horizontal overflow (976ms)
+(node:12611) MetadataLookupWarning: received unexpected error = All promises were rejected code = 401, ENOTFOUND
+(Use `node --trace-warnings ...` to show where the warning was created)
+Firestore: profile matched before and after browser reload.
+Browser: module catalog and SAMPLE lesson rendered.
+Browser: correct quiz answer recorded in Firestore.
+Browser: sample short-answer feedback returned.
+  ✓  4 tests/e2e/onboarding.spec.ts:6:1 › email signup persists an onboarding profile in Firestore across reload (3.0s)
+
+  4 passed (11.2s)
+$ npm run eval:tutor
+
+> internee-learning-studio@1.0.0 eval:tutor
+> node --env-file-if-exists=.env.local --import tsx scripts/eval-tutor.ts
+
+SAMPLE tutor evaluation; provider=demo; 20 cases. HTTP route warmed with GET; model not pre-warmed.
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":103,"ms":117}
+01 PASS lesson=prompt-patterns expected=prompt-patterns--01 cited=prompt-patterns--01 first_ms=113.0
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":41,"ms":52}
+02 PASS lesson=prompt-patterns expected=prompt-patterns--02 cited=prompt-patterns--02 first_ms=50.2
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":25,"ms":36}
+03 PASS lesson=prompt-patterns expected=prompt-patterns--03 cited=prompt-patterns--03 first_ms=34.7
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":45,"ms":57}
+04 PASS lesson=llm-apis expected=llm-apis--01 cited=llm-apis--01 first_ms=54.8
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":25,"ms":36}
+05 PASS lesson=llm-apis expected=llm-apis--02 cited=llm-apis--02 first_ms=32.3
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":26,"ms":38}
+06 PASS lesson=llm-apis expected=llm-apis--03 cited=llm-apis--03 first_ms=32.8
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":39,"ms":51}
+07 PASS lesson=rag expected=rag--01 cited=rag--01 first_ms=46.5
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":27,"ms":37}
+08 PASS lesson=rag expected=rag--02 cited=rag--02 first_ms=36.1
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":42,"ms":53}
+09 PASS lesson=rag expected=rag--03 cited=rag--03 first_ms=50.1
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":25,"ms":36}
+10 PASS lesson=rag expected=rag--04 cited=rag--04 first_ms=31.2
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":26,"ms":34}
+11 PASS lesson=langchain expected=langchain--01 cited=langchain--01 first_ms=32.0
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":32,"ms":56}
+12 PASS lesson=langchain expected=langchain--02 cited=langchain--02 first_ms=38.8
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":31,"ms":39}
+13 PASS lesson=evaluation expected=evaluation--01 cited=evaluation--01 first_ms=37.2
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":37,"ms":48}
+14 PASS lesson=evaluation expected=evaluation--03 cited=evaluation--03 first_ms=43.6
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":26,"ms":36}
+15 PASS lesson=deployment expected=deployment--02 cited=deployment--02 first_ms=32.7
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":31,"ms":45}
+16 PASS lesson=deployment expected=deployment--03 cited=deployment--03 first_ms=40.3
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":30,"ms":41}
+17 PASS lesson=rag expected=abstain cited=none first_ms=36.4
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":31,"ms":42}
+18 PASS lesson=prompt-patterns expected=abstain cited=none first_ms=38.2
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":21,"ms":35}
+19 PASS lesson=rag expected=abstain cited=none first_ms=29.0
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":48,"ms":58}
+20 PASS lesson=deployment expected=abstain cited=none first_ms=55.6
+In scope with correct citation: 100.0% (16/16)
+In scope with a citation: 100.0% (16/16)
+Out-of-scope abstention: 100.0% (4/4)
+First visible text p50=37.2 ms; p95=55.6 ms; errors=0.
+Gemini live groundedness and latency: NOT RUN. Citation-label agreement does not measure full factual support.
+Local CI integration sequence passed.
+✔  Script exited successfully (code 0)
+i  emulators: Shutting down emulators.
+i  firestore: Stopping Firestore Emulator
+i  auth: Stopping Authentication Emulator
+i  storage: Stopping Storage Emulator
+i  hub: Stopping emulator hub
+i  logging: Stopping Logging Emulator

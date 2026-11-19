@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getLesson, seedQuestions } from "./catalog";
 import { db } from "./firebase-admin";
 import { HttpError } from "./http";
+import { providerAdmission } from "./limits";
 import { INITIAL_MASTERY, nextMastery } from "./mastery";
 import { aiMode, structured, terms } from "./openai";
 import { masteryId, topicMastery } from "./practice-store";
@@ -107,7 +108,7 @@ export async function generateQuiz(
       data,
       generatedWire,
       1650,
-      signal,
+      { signal, admit: providerAdmission(uid) },
     );
     const parsed = response.questions.map(({ options, rubric, ...entry }) =>
       entry.type === "mcq"
@@ -288,7 +289,7 @@ export async function gradeQuiz(
       data,
       gradeWire,
       440,
-      signal,
+      { signal, admit: providerAdmission(uid) },
     );
     const clean = gradeOutputSchema.safeParse(result);
     if (!clean.success)

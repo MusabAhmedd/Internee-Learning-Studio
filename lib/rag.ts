@@ -8,6 +8,7 @@ import {
   embeddingModel,
   embeddingSchema,
   terms,
+  type ProviderOptions,
 } from "./openai";
 import { idSchema, revisionSchema, text, type LessonView } from "./schemas";
 import { sections, sectionSchema } from "./sections";
@@ -36,7 +37,6 @@ export async function buildLessonIndex(
   lessonId: string,
   title: string,
   content: string,
-  signal?: AbortSignal,
 ) {
   const database = db();
   const blocks = sections(lessonId, content);
@@ -67,7 +67,6 @@ export async function buildLessonIndex(
         }
         const embedding = await embed(
           `${title}\n${block.title}\n${block.text}`,
-          signal,
         );
         return indexedChunkSchema.parse({
           id: block.id,
@@ -146,7 +145,7 @@ export function cosine(left: number[], right: number[]) {
 }
 
 const queryCache = new Map<string, { vector: number[]; until: number }>();
-async function queryVector(value: string, signal?: AbortSignal) {
+async function queryVector(value: string, options?: ProviderOptions) {
   const key = hash(`${embeddingModel()}\0${value.toLowerCase()}`);
   const cached = queryCache.get(key);
   if (cached && cached.until > Date.now()) {
@@ -154,7 +153,7 @@ async function queryVector(value: string, signal?: AbortSignal) {
     queryCache.set(key, cached);
     return cached.vector;
   }
-  const vector = await embed(value, signal);
+  const vector = await embed(value, options);
   queryCache.set(key, { vector, until: Date.now() + 15 * 60 * 1000 });
   if (queryCache.size > 128) {
     const oldest = queryCache.keys().next().value;
@@ -166,7 +165,7 @@ async function queryVector(value: string, signal?: AbortSignal) {
 export async function retrieve(
   view: LessonView,
   question: string,
-  signal?: AbortSignal,
+  options?: ProviderOptions,
   wholeLesson = false,
 ) {
   const model = embeddingModel();
@@ -206,7 +205,7 @@ export async function retrieve(
     return chunks.sort((a, b) => a.id.localeCompare(b.id)).slice(0, 3);
   const queryTerms = terms(question);
   if (!queryTerms.length) return [];
-  const vector = await queryVector(question, signal);
+  const vector = await queryVector(question, options);
   const demo = aiMode() === "demo";
   const ranked = chunks
     .map((chunk) => {

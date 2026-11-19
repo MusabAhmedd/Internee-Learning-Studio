@@ -10,6 +10,7 @@ export async function evalSession(role?: "admin") {
     return {
       uid: undefined,
       token: process.env.EVAL_ID_TOKEN,
+      appCheck: process.env.EVAL_APP_CHECK_TOKEN,
       dispose: async () => {},
     };
   }
@@ -40,5 +41,10 @@ export async function evalSession(role?: "admin") {
   const { idToken } = z
     .object({ idToken: z.string() })
     .parse(await response.json());
-  return { uid, token: idToken, dispose: () => adminAuth().deleteUser(uid) };
+  return {
+    uid,
+    token: idToken,
+    appCheck: undefined,
+    dispose: () => adminAuth().deleteUser(uid),
+  };
 }

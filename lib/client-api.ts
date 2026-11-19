@@ -1,5 +1,6 @@
 import type { User } from "firebase/auth";
 import type { z } from "zod";
+import { browserAppToken } from "./firebase-client";
 import { errorSchema } from "./schemas";
 
 export class ApiError extends Error {
@@ -12,13 +13,25 @@ export class ApiError extends Error {
   }
 }
 
+export async function prepareApiHeaders(user: User) {
+  const [id, appToken] = await Promise.all([
+    user.getIdToken(),
+    browserAppToken().catch(() => null),
+  ]);
+  const headers = new Headers({ Authorization: `Bearer ${id}` });
+  if (appToken) headers.set("X-Firebase-AppCheck", appToken);
+  return headers;
+}
+
 export async function requestApi(
   user: User,
   path: string,
   init: RequestInit = {},
+  prepared?: Headers,
 ) {
   const headers = new Headers(init.headers);
-  headers.set("Authorization", `Bearer ${await user.getIdToken()}`);
+  for (const [name, value] of prepared ?? (await prepareApiHeaders(user)))
+    headers.set(name, value);
   if (init.body && !headers.has("Content-Type"))
     headers.set("Content-Type", "application/json");
   const signal = init.signal
@@ -48,8 +61,9 @@ export async function api<T>(
   path: string,
   schema: z.ZodType<T>,
   init: RequestInit = {},
+  prepared?: Headers,
 ): Promise<T> {
-  const response = await requestApi(user, path, init);
+  const response = await requestApi(user, path, init, prepared);
   return schema.parse(await response.json());
 }
 

@@ -7,7 +7,7 @@ import {
   readJson,
 } from "@/lib/http";
 import { questionFor, recordHint } from "@/lib/quiz";
-import { takeAiQuota } from "@/lib/limits";
+import { providerAdmission, takeApiQuota } from "@/lib/limits";
 import {
   finalFrameSchema,
   idSchema,
@@ -31,6 +31,10 @@ export const GET = authenticated(async (request, claims) => {
 export const POST = authenticated(async (request, claims) => {
   const start = performance.now();
   const input = await readJson(request, tutorInputSchema);
+  await takeApiQuota(
+    claims.uid,
+    input.mode === "hint" ? "tutor-hint" : "tutor",
+  );
   const [lesson, chat] = await Promise.all([
     getLesson(input.lessonId),
     getChat(claims.uid, input.lessonId),
@@ -45,7 +49,6 @@ export const POST = authenticated(async (request, claims) => {
       "The question does not belong to this lesson.",
     );
   const message = assessed?.spec.prompt ?? input.message;
-  await takeAiQuota(claims.uid);
 
   const cancellation = new AbortController();
   const signal = AbortSignal.any([request.signal, cancellation.signal]);
@@ -64,7 +67,7 @@ export const POST = authenticated(async (request, claims) => {
           input.mode,
           message,
           chat.messages,
-          signal,
+          { signal, admit: providerAdmission(claims.uid) },
           (delta) => {
             if (delta.trim() && first === undefined)
               first = Math.round(performance.now() - start);

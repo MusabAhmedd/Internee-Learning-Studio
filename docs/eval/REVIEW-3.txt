@@ -1,0 +1,295 @@
+
+$ npm run format:check
+
+> internee-learning-studio@1.0.0 format:check
+> prettier --check .
+
+Checking formatting...
+All matched files use Prettier code style!
+
+$ npm run lint
+
+> internee-learning-studio@1.0.0 lint
+> eslint . --max-warnings=0
+
+
+$ npm run typecheck
+
+> internee-learning-studio@1.0.0 typecheck
+> next typegen && tsc --noEmit
+
+Generating route types...
+✓ Types generated successfully
+
+$ npm run test:unit
+
+> internee-learning-studio@1.0.0 test:unit
+> node --import tsx --test tests/mastery.test.ts tests/plan.test.ts tests/limits.test.ts tests/study-time.test.ts
+
+✔ admission is lazy and the embedding and chat share one reservation (1.026118ms)
+✔ a fixed hint uses canonical lesson text and never requests provider admission (8.446125ms)
+✔ mastery uses the exact weighted update for correct and incorrect answers (1.0327ms)
+✔ hint penalty stops at three and the score stays within [0, 1] (0.204808ms)
+✔ weak areas require at least three attempts and strictly less than 0.5 (0.188768ms)
+✔ rejects a fabricated lessonId even when the JSON has the correct shape (6.931397ms)
+✔ enforces prerequisites, seven consecutive dates, exact lesson minutes, and weekly budget (2.530163ms)
+✔ a cursor credits only the new visible portion, even across tabs (2.485918ms)
+✔ study reports reject invalid spans, stale timestamps, and future inflation (3.655991ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2468.591871
+
+$ npm run build
+
+> internee-learning-studio@1.0.0 build
+> next build
+
+▲ Next.js 16.4.6 (Turbopack)
+- Environments: .env.local
+✓ Running next.config.ts took 36ms
+- Experiments (use with caution):
+  · cpus: 2
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 1795ms
+  Running TypeScript ...
+  Finished TypeScript in 3.1s ...
+  Collecting page data using 2 workers ...
+  Generating static pages using 2 workers (0/25) ...
+  Generating static pages using 2 workers (6/25)
+  Generating static pages using 2 workers (12/25)
+  Generating static pages using 2 workers (18/25)
+✓ Generating static pages using 2 workers (25/25) in 409ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /admin
+├ ƒ /api/admin
+├ ƒ /api/admin/import
+├ ƒ /api/catalog
+├ ƒ /api/certificate
+├ ƒ /api/dashboard
+├ ƒ /api/demo
+├ ƒ /api/health
+├ ƒ /api/lesson/[id]
+├ ƒ /api/plan
+├ ƒ /api/profile
+├ ƒ /api/progress
+├ ƒ /api/quiz/generate
+├ ƒ /api/quiz/grade
+├ ƒ /api/summary
+├ ƒ /api/tutor
+├ ○ /dashboard
+├ ƒ /emulator/auth/[page]
+├ ○ /icon.svg
+├ ƒ /identitytoolkit.googleapis.com/v1/[operation]
+├ ƒ /lesson/[id]
+├ ○ /login
+├ ○ /modules
+├ ○ /onboarding
+├ ○ /plan
+└ ƒ /securetoken.googleapis.com/v1/token
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+
+$ npm run ci:integration
+
+> internee-learning-studio@1.0.0 ci:integration
+> firebase emulators:exec --project demo-learning-studio --only auth,firestore,storage "node --env-file-if-exists=.env.local scripts/ci-integration.mjs"
+
+i  emulators: Starting emulators: auth, firestore, storage
+i  emulators: Detected demo project ID "demo-learning-studio", emulated services will use a demo configuration and attempts to access non-emulated services for this project will fail.
+i  firestore: Firestore Emulator logging to firestore-debug.log
+✔  firestore: Firestore Emulator was started in standard edition.
+✔  firestore: Firestore Emulator UI websocket is running on 9150.
+i  Running script: node --env-file-if-exists=.env.local scripts/ci-integration.mjs
+▲ Next.js 16.4.6
+- Local:         http://localhost:3000
+- Network:       http://0.0.0.0:3000
+✓ Ready in 0ms
+✓ Running next.config took 12ms
+Health check: HTTP 200.
+$ npm run seed
+
+> internee-learning-studio@1.0.0 seed
+> node --env-file-if-exists=.env.local --import tsx scripts/seed.ts
+
+(node:13905) MetadataLookupWarning: received unexpected error = All promises were rejected code = 401, ENOTFOUND
+(Use `node --trace-warnings ...` to show where the warning was created)
+SAMPLE: published revision 27d110231119; 6 modules, 6 lessons, 18 quiz items.
+$ npm run embed -- --verify
+
+> internee-learning-studio@1.0.0 embed
+> node --env-file-if-exists=.env.local --import tsx scripts/embed-lessons.ts --verify
+
+(node:13934) MetadataLookupWarning: received unexpected error = All promises were rejected code = 401, ENOTFOUND
+(Use `node --trace-warnings ...` to show where the warning was created)
+Index: 21 sections; 0 embeddings reused; model=local-hashed-terms-v1.
+Query top match: rag--01 — Retrieval before generation (expected).
+$ npm run test:tutor
+
+> internee-learning-studio@1.0.0 test:tutor
+> node --env-file-if-exists=.env.local --import tsx scripts/tutor-probe.ts
+
+(node:13876) MetadataLookupWarning: received unexpected error = All promises were rejected code = 401, ENOTFOUND
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":90,"ms":125}
+(node:13957) MetadataLookupWarning: received unexpected error = All promises were rejected code = 401, ENOTFOUND
+(Use `node --trace-warnings ...` to show where the warning was created)
+Provider: demo; warmed local HTTP first text: 107.2 ms (< 2000 ms).
+Citations resolved: rag--01. Unauthenticated request returned 401.
+$ npm run test:rules
+
+> internee-learning-studio@1.0.0 test:rules
+> node --env-file-if-exists=.env.local --import tsx --test tests/rules.test.ts
+
+✔ user A can read their own profile and cannot read user B profile or progress (1299.030927ms)
+✔ user A cannot read user B attempts, mastery, plan, summary, or chat (234.129989ms)
+✔ answer keys and embeddings stay private; a signed-in learner may read published lessons (122.268607ms)
+[2026-11-19T18:25:37.648Z]  @firebase/firestore: Firestore (13.4.0): GrpcConnection RPC 'Write' stream 0x6d196614 error. Code: 7 Message: 7 PERMISSION_DENIED:
+false for 'create' @ L23, false for 'update' @ L23
+[2026-11-19T18:25:37.706Z]  @firebase/firestore: Firestore (13.4.0): GrpcConnection RPC 'Write' stream 0x6d196615 error. Code: 7 Message: 7 PERMISSION_DENIED:
+false for 'create' @ L23, false for 'update' @ L23
+[2026-11-19T18:25:37.727Z]  @firebase/firestore: Firestore (13.4.0): GrpcConnection RPC 'Write' stream 0x6d196616 error. Code: 7 Message: 7 PERMISSION_DENIED:
+false for 'create' @ L23, false for 'update' @ L23
+[2026-11-19T18:25:37.751Z]  @firebase/firestore: Firestore (13.4.0): GrpcConnection RPC 'Write' stream 0x6d196617 error. Code: 7 Message: 7 PERMISSION_DENIED:
+false for 'create' @ L23, false for 'update' @ L23
+[2026-11-19T18:25:37.807Z]  @firebase/firestore: Firestore (13.4.0): GrpcConnection RPC 'Write' stream 0x6d196618 error. Code: 7 Message: 7 PERMISSION_DENIED:
+false for 'create' @ L23, false for 'update' @ L23
+✔ client writes cannot forge profile changes, attempts, or imported curriculum, even with admin claim (291.420688ms)
+✔ Storage archives are private and browser uploads cannot bypass the admin route (195.226625ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2720.05951
+$ npm run test:api
+
+> internee-learning-studio@1.0.0 test:api
+> node --env-file-if-exists=.env.local --import tsx --test tests/api.test.ts
+
+✔ feature routes require a Firebase ID token (118.949325ms)
+(node:14018) MetadataLookupWarning: received unexpected error = All promises were rejected code = 401, ENOTFOUND
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"event":"embedding","model":"gemini-embedding-001","status":"AI_DAILY_LIMIT","attempted":false,"upstreamStatus":null,"ms":26,"inputTokens":null,"outputTokens":null,"totalTokens":null}
+{"event":"probe","model":"gemini-3.1-flash-lite","status":"AI_DAILY_LIMIT","attempted":false,"upstreamStatus":null,"ms":1,"inputTokens":null,"outputTokens":null,"totalTokens":null}
+{"event":"tutor_model","model":"gemini-3.1-flash-lite","status":"AI_DAILY_LIMIT","attempted":false,"upstreamStatus":null,"ms":0,"inputTokens":null,"outputTokens":null,"totalTokens":null}
+✔ Gemini admission at its cap blocks embedding and chat before any upstream fetch (235.713706ms)
+✔ demo plans and recaps, including cache hits, do not spend provider quota (372.202585ms)
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":101,"ms":136}
+At the Gemini cap, a fixed hint and repeated MCQ grade succeeded. At the ordinary API cap, grading returned API_RATE_LIMIT.
+Assessment checks: authorized hint recorded once; answer not leaked; cross-user grade rejected.
+✔ quiz keys stay private; hint is Socratic and idempotent grading records a single attempt (460.95658ms)
+With Gemini quota exhausted, admin import succeeded. Its own administrative cap returned ADMIN_IMPORT_RATE_LIMIT.
+Admin checks: non-admin denied; validated JSON archived in Storage; catalog changed and restored.
+✔ admin requires the realtime claim; validates and archives JSON before catalog replacement (807.66571ms)
+Study checks: incomplete time shown, overlapping reports not double-counted, invalid elapsed claims rejected, and lesson cap enforced.
+✔ study reports are visible before completion, deduplicated across lessons, and capped (511.476951ms)
+Certificate checks: gated before completion; generated PDF parses as one page.
+✔ completing a track unlocks a valid PDF via the authenticated certificate route (477.221634ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4098.830304
+$ npm run test:e2e
+
+> internee-learning-studio@1.0.0 test:e2e
+> node --env-file-if-exists=.env.local node_modules/@playwright/test/cli.js test
+
+
+Running 5 tests using 1 worker
+
+Heatmap matches SAMPLE attempts: RAG 32%, Prompt engineering 88%; 2 of 6 lessons completed.
+After a low quiz score, opening Study plan automatically refreshed the plan.
+  ✓  1 tests/e2e/dashboard.spec.ts:3:1 › sample cohort heatmap, learner plan, and focused practice reflect the seed (2.8s)
+Simulated provider popup created a Firebase session; hosted Google OAuth was not exercised.
+  ✓  2 tests/e2e/google.spec.ts:4:1 › Google Auth Emulator popup reaches onboarding (1.1s)
+Mobile: 390px viewport, no horizontal overflow, keyboard menu and route navigation passed.
+  ✓  3 tests/e2e/mobile.spec.ts:3:1 › mobile navigation is keyboard operable without horizontal overflow (928ms)
+(node:14053) MetadataLookupWarning: received unexpected error = All promises were rejected code = 401, ENOTFOUND
+(Use `node --trace-warnings ...` to show where the warning was created)
+Firestore: profile matched before and after browser reload.
+Browser: module catalog and SAMPLE lesson rendered.
+Browser: correct quiz answer recorded in Firestore.
+Browser: sample short-answer feedback returned.
+  ✓  4 tests/e2e/onboarding.spec.ts:6:1 › email signup persists an onboarding profile in Firestore across reload (3.9s)
+Study tracking: periodic write, hidden-tab pause, and keepalive on actual page exit verified.
+  ✓  5 tests/e2e/study-time.spec.ts:5:1 › visible lesson time persists periodically, on hide and on page exit (18.8s)
+
+  5 passed (29.8s)
+$ npm run eval:tutor
+
+> internee-learning-studio@1.0.0 eval:tutor
+> node --env-file-if-exists=.env.local --import tsx scripts/eval-tutor.ts
+
+SAMPLE tutor evaluation; provider=demo; 20 cases. HTTP route warmed with GET; model not pre-warmed.
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":33,"ms":42}
+01 PASS lesson=prompt-patterns expected=prompt-patterns--01 cited=prompt-patterns--01 first_ms=42.5
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":32,"ms":44}
+02 PASS lesson=prompt-patterns expected=prompt-patterns--02 cited=prompt-patterns--02 first_ms=38.6
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":29,"ms":37}
+03 PASS lesson=prompt-patterns expected=prompt-patterns--03 cited=prompt-patterns--03 first_ms=34.3
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":32,"ms":54}
+04 PASS lesson=llm-apis expected=llm-apis--01 cited=llm-apis--01 first_ms=38.7
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":30,"ms":39}
+05 PASS lesson=llm-apis expected=llm-apis--02 cited=llm-apis--02 first_ms=37.0
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":32,"ms":42}
+06 PASS lesson=llm-apis expected=llm-apis--03 cited=llm-apis--03 first_ms=38.0
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":25,"ms":34}
+07 PASS lesson=rag expected=rag--01 cited=rag--01 first_ms=32.1
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":56,"ms":113}
+08 PASS lesson=rag expected=rag--02 cited=rag--02 first_ms=68.6
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":31,"ms":40}
+09 PASS lesson=rag expected=rag--03 cited=rag--03 first_ms=37.9
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":33,"ms":45}
+10 PASS lesson=rag expected=rag--04 cited=rag--04 first_ms=38.9
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":25,"ms":36}
+11 PASS lesson=langchain expected=langchain--01 cited=langchain--01 first_ms=31.3
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":27,"ms":37}
+12 PASS lesson=langchain expected=langchain--02 cited=langchain--02 first_ms=34.0
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":24,"ms":34}
+13 PASS lesson=evaluation expected=evaluation--01 cited=evaluation--01 first_ms=29.2
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":30,"ms":39}
+14 PASS lesson=evaluation expected=evaluation--03 cited=evaluation--03 first_ms=36.2
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":23,"ms":32}
+15 PASS lesson=deployment expected=deployment--02 cited=deployment--02 first_ms=28.6
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":28,"ms":38}
+16 PASS lesson=deployment expected=deployment--03 cited=deployment--03 first_ms=34.7
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":28,"ms":38}
+17 PASS lesson=rag expected=abstain cited=none first_ms=33.2
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":23,"ms":32}
+18 PASS lesson=prompt-patterns expected=abstain cited=none first_ms=27.5
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":20,"ms":32}
+19 PASS lesson=rag expected=abstain cited=none first_ms=26.3
+{"event":"tutor_stream","provider":"demo","status":"ok","firstTextMs":23,"ms":33}
+20 PASS lesson=deployment expected=abstain cited=none first_ms=30.0
+In scope with correct citation: 100.0% (16/16)
+In scope with a citation: 100.0% (16/16)
+Out-of-scope abstention: 100.0% (4/4)
+First visible text p50=34.3 ms; p95=42.5 ms; errors=0.
+Gemini live groundedness and latency: NOT RUN. Citation-label agreement does not measure full factual support.
+Local CI integration sequence passed.
+✔  Script exited successfully (code 0)
+i  emulators: Shutting down emulators.
+i  firestore: Stopping Firestore Emulator
+i  auth: Stopping Authentication Emulator
+i  storage: Stopping Storage Emulator
+i  hub: Stopping emulator hub
+i  logging: Stopping Logging Emulator

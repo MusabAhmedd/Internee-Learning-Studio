@@ -28,3 +28,24 @@ export function browserAuth() {
     });
   return auth;
 }
+
+let check: import("firebase/app-check").AppCheck | undefined;
+let attestation: Promise<string | null> | undefined;
+export async function browserAppToken() {
+  const key = process.env.NEXT_PUBLIC_FIREBASE_APP_CHECK_SITE_KEY;
+  if (demoEnabled || !key) return null;
+  // Firebase caches App Check tokens; this also coalesces concurrent requests in a tab.
+  attestation ??= (async () => {
+    const { getToken, initializeAppCheck, ReCaptchaEnterpriseProvider } =
+      await import("firebase/app-check");
+    const app = browserAuth().app;
+    check ??= initializeAppCheck(app, {
+      provider: new ReCaptchaEnterpriseProvider(key),
+      isTokenAutoRefreshEnabled: true,
+    });
+    return (await getToken(check)).token;
+  })().finally(() => {
+    attestation = undefined;
+  });
+  return attestation;
+}

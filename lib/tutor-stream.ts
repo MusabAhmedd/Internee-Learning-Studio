@@ -14,7 +14,8 @@ export async function readTutor(
     if (!value.trim()) return;
     const event = tutorFrameSchema.parse(JSON.parse(value));
     if (citations) throw new Error("Unexpected frame after tutor completion.");
-    if (event.type === "error") throw new TutorStreamError(event.error.message);
+    if (event.type === "error")
+      throw new TutorStreamError(event.error.message, event.error.code);
     if (event.type === "delta") {
       text += event.text;
       if (text.length > 4500) throw new Error("Tutor message exceeds limit.");
@@ -47,4 +48,11 @@ export async function readTutor(
     reader.releaseLock();
   }
 }
-export class TutorStreamError extends Error {}
+export class TutorStreamError extends Error {
+  constructor(
+    message: string,
+    readonly code = "STREAM_INTERRUPTED",
+  ) {
+    super(message);
+  }
+}

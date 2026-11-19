@@ -3,6 +3,7 @@ import { z } from "zod";
 import { listCatalog } from "./catalog";
 import { db } from "./firebase-admin";
 import { HttpError } from "./http";
+import { providerAdmission } from "./limits";
 import { aiMode, structured } from "./openai";
 import {
   type PlanCandidate,
@@ -34,7 +35,7 @@ const wire = z.strictObject({
     )
     .length(7),
 });
-export async function planContext(uid: string) {
+export async function planContext(uid: string, now = new Date()) {
   const database = db();
   const [user, content, done, attempts, marker, previous] = await Promise.all([
     database.doc(`users/${uid}`).get(),
@@ -96,7 +97,8 @@ export async function planContext(uid: string) {
         Number(b.score !== null && b.score < 0.6) -
         Number(a.score !== null && a.score < 0.6),
     );
-  const today = weekDates(new Date())[0];
+  const dates = weekDates(now, profile.timeZone);
+  const today = dates[0];
   let reason: z.infer<typeof planStatusSchema>["reason"] = null;
   if (prior) {
     if (prior.revision !== revision) reason = "curriculum";
@@ -133,6 +135,7 @@ export async function planContext(uid: string) {
   });
   return {
     status,
+    dates,
     candidates,
     revision,
     profile,
@@ -150,7 +153,7 @@ export async function createPlan(
   context: Awaited<ReturnType<typeof planContext>>,
   signal?: AbortSignal,
 ) {
-  const { status, candidates, revision, profile, profileHash, recent } =
+  const { status, dates, candidates, revision, profile, profileHash, recent } =
     context;
   if (!revision || !candidates.length)
     throw new HttpError(
@@ -158,7 +161,6 @@ export async function createPlan(
       "NO_TRACK_LESSONS",
       "No modules are published for your track yet. Choose a track with lessons or wait for a curriculum import.",
     );
-  const dates = weekDates(new Date());
   const createdAt = new Date().toISOString();
   const budget = status.budgetMinutes;
   // NOT_IMPLEMENTED (demo provider only): model inference. The local scheduling algorithm observes the same validation and study constraints.
@@ -179,7 +181,7 @@ export async function createPlan(
           }),
           wire,
           2200,
-          signal,
+          { signal, admit: providerAdmission(uid) },
         );
   const checked = validatePlan(proposal, candidates, dates, budget);
   const database = db();

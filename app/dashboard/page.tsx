@@ -53,12 +53,6 @@ const labels: Record<
     detail: "Complete every lesson in your track",
   },
 };
-const dateFormat = new Intl.DateTimeFormat("en-GB", {
-  weekday: "short",
-  month: "short",
-  day: "numeric",
-  timeZone: "UTC",
-});
 const percent = (ratio: number) => Math.round(ratio * 100);
 function duration(seconds: number) {
   const mins = Math.floor(seconds / 60),
@@ -95,7 +89,13 @@ function Dashboard({ context }: { context: Workspace }) {
   const plan = usePlan(context.user);
   const view = state.data;
   const first = context.profile.displayName.split(/\s+/)[0];
-  const today = dateFormat.format(new Date());
+  const zone = context.profile.timeZone;
+  const today = new Intl.DateTimeFormat("en-GB", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    timeZone: zone,
+  }).format(new Date());
   const progress = view?.total ? percent(view.completed / view.total) : 0;
   const accuracy = view?.attempts
     ? percent(view.correct / view.attempts)
@@ -120,7 +120,7 @@ function Dashboard({ context }: { context: Workspace }) {
         <span className="date-chip">
           <CalendarDays size={16} aria-hidden="true" />
           {today}
-          <small>UTC</small>
+          <small>{zone}</small>
         </span>
       </div>
       <section className="journey-hero" aria-label="Active learning track">
@@ -452,6 +452,9 @@ function WeeklyRecap({ user }: { user: User }) {
             {summary?.provider === "demo"
               ? "SAMPLE · local recap"
               : "A snapshot of the last seven days."}
+            {summary?.period
+              ? ` · Through ${summary.period.through} (${summary.period.timeZone})`
+              : ""}
           </p>
         </div>
       </div>

@@ -145,6 +145,9 @@ test("user A cannot read user B attempts, mastery, plan, summary, or chat", asyn
     ["plans", bob],
     ["summaries", bob],
     ["chats", `${bob}-rag`],
+    ["studyCursors", alice],
+    ["serviceLimits", "gemini"],
+    ["providerLimits", alice],
   ])
     await assertFails(getDoc(doc(database, collectionId, id)));
   await assertSucceeds(
@@ -174,6 +177,11 @@ test("client writes cannot forge profile changes, attempts, or imported curricul
     .firestore();
   await assertFails(setDoc(doc(client, "users", bob), profile));
   await assertFails(setDoc(doc(client, "users", alice), profile));
+  await assertFails(
+    setDoc(doc(client, "users", alice, "progress", "rag"), {
+      studySeconds: 7200,
+    }),
+  );
   await assertFails(
     setDoc(doc(client, "attempts", `${alice}-q`), {
       uid: alice,

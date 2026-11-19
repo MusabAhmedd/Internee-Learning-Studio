@@ -19,12 +19,18 @@
     "seed": "node --env-file-if-exists=.env.local --import tsx scripts/seed.ts",
     "embed": "node --env-file-if-exists=.env.local --import tsx scripts/embed-lessons.ts",
     "test:tutor": "node --env-file-if-exists=.env.local --import tsx scripts/tutor-probe.ts",
-    "test:unit": "node --import tsx --test tests/mastery.test.ts tests/plan.test.ts",
+    "test:unit": "node --import tsx --test tests/mastery.test.ts tests/plan.test.ts tests/limits.test.ts tests/study-time.test.ts tests/learning-dates.test.ts tests/abuse.test.ts",
     "admin:grant": "node --env-file-if-exists=.env.local --import tsx scripts/grant-admin.ts",
     "test:rules": "node --env-file-if-exists=.env.local --import tsx --test tests/rules.test.ts",
     "test:api": "node --env-file-if-exists=.env.local --import tsx --test tests/api.test.ts",
     "eval:tutor": "node --env-file-if-exists=.env.local --import tsx scripts/eval-tutor.ts",
-    "ci:integration": "firebase emulators:exec --project demo-learning-studio --only auth,firestore,storage \"node --env-file-if-exists=.env.local scripts/ci-integration.mjs\""
+    "ci:integration": "firebase emulators:exec --project demo-learning-studio --only auth,firestore,storage \"node --env-file-if-exists=.env.local scripts/ci-integration.mjs\"",
+    "verify:gemini": "node --env-file-if-exists=.env.local scripts/verify-gemini.mjs",
+    "test:gemini": "node --env-file-if-exists=.env.local --import tsx scripts/gemini-probe.ts",
+    "eval:quality": "node --env-file-if-exists=.env.local --import tsx scripts/eval-tutor-quality.ts",
+    "eval:review": "node --import tsx scripts/score-tutor-review.ts",
+    "release:check": "node scripts/release.mjs --check",
+    "release:zip": "node scripts/release.mjs"
   },
   "dependencies": {
     "@radix-ui/react-slot": "1.5.0",

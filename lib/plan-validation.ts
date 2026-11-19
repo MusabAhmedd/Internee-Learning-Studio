@@ -1,3 +1,4 @@
+import { localDate, shiftDate } from "./learning-dates";
 import { HttpError } from "./http";
 import { planSchema, type Plan } from "./schemas";
 
@@ -9,15 +10,9 @@ export type PlanCandidate = {
   completed: boolean;
   score: number | null;
 };
-export function weekDates(start: Date) {
-  const base = Date.UTC(
-    start.getUTCFullYear(),
-    start.getUTCMonth(),
-    start.getUTCDate(),
-  );
-  return Array.from({ length: 7 }, (_, index) =>
-    new Date(base + 86_400_000 * index).toISOString().slice(0, 10),
-  );
+export function weekDates(start: Date, timeZone = "UTC") {
+  const today = localDate(start, timeZone);
+  return Array.from({ length: 7 }, (_, index) => shiftDate(today, index));
 }
 export function validatePlan(
   value: unknown,

@@ -1,17 +1,11 @@
 import type { DecodedIdToken } from "firebase-admin/auth";
 import { z } from "zod";
+import { attestRequest } from "./app-attestation";
 import { adminAuth } from "./firebase-admin";
 import { uidSchema } from "./schemas";
 
-export class HttpError extends Error {
-  constructor(
-    public readonly status: number,
-    public readonly code: string,
-    message: string,
-  ) {
-    super(message);
-  }
-}
+import { HttpError } from "./http-error";
+export { HttpError } from "./http-error";
 export const json = (data: unknown, status = 200) =>
   Response.json(data, { status, headers: { "Cache-Control": "no-store" } });
 
@@ -62,7 +56,9 @@ export function authenticated(
 ) {
   return async (request: Request) => {
     try {
-      return await handler(request, await identity(request));
+      const claims = await identity(request);
+      await attestRequest(request);
+      return await handler(request, claims);
     } catch (err) {
       const value = errorBody(err);
       return json({ error: value.error }, value.status);

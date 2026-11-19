@@ -33,7 +33,7 @@ flowchart LR
 
 The browser never receives a provider secret or private answer key. Firebase Web configuration is public by design; Firebase rules and route authorization, not the Web API key, protect data. The Firebase Admin SDK is server-only. Learners can read their own records under Firestore rules; all writes go through authenticated, Zod-validated routes. MCQ grading and mastery updates are transactional. The master document ID uses the UID and a hash of the topic.
 
-**Collections:** `users/{uid}`, `users/{uid}/progress/{lessonId}`, `modules/{moduleId}/lessons/{lessonId}/quizzes/{id}`, `lesson_index`, `lessons_chunks`, `attempts`, `mastery`, `plans`, `chats`, `summaries`, `quizQuestions`, `quizHints`, `activity`, `aiLimits`, and `catalog/meta`.
+**Collections:** `users/{uid}`, `users/{uid}/progress/{lessonId}`, `modules/{moduleId}/lessons/{lessonId}/quizzes/{id}`, `lesson_index`, `lessons_chunks`, `attempts`, `mastery`, `plans`, `chats`, `summaries`, `quizQuestions`, `quizHints`, `activity`, `studyCursors`, `apiLimits`, `providerLimits`, `serviceLimits`, and `catalog/meta`.
 
 ### Stack and verified versions
 
@@ -73,6 +73,16 @@ Open `http://localhost:3000/`. The demo automatically creates an isolated emulat
 
 Get a Gemini API key in [Google AI Studio](https://aistudio.google.com/api-keys), set `AI_PROVIDER=gemini` and `GEMINI_API_KEY` in `.env.local`, run `npm run embed` again, and restart the app. You may leave Firebase on the emulators for this test. The example chat and embedding models are listed on [Gemini API pricing](https://ai.google.dev/gemini-api/docs/pricing) and support the [OpenAI-compatible API](https://ai.google.dev/gemini-api/docs/openai). Free-tier availability and quotas depend on the account and model. Check the provider’s data-use terms before submitting private training content. An OpenAI key is neither used nor required.
 
+**Verify the live workflows:** With the demo `.env.local` values, an authorized staging `GEMINI_API_KEY` set locally (never in chat or Git), and the bundled model IDs or compatible env overrides, stop other local app/emulator processes and run:
+
+```bash
+npm run build
+set -o pipefail
+npm run verify:gemini 2>&1 | tee gemini-verification.log
+```
+
+This opt-in check sends only SAMPLE content to Gemini, starts fresh local Firebase emulators, verifies real embeddings and all five API workflows, and reports status, wall time, first tutor text, and any tokens returned by the provider. Review the limits/eligibility of the key's project; indexing alone makes one embedding call per section. No model is mocked, and missing credentials stop the command with `NOT RUN`. `null` token fields mean not reported, not zero. This is a functional smoke test, not a learning-quality evaluation.
+
 | Environment variable                                                                                                                 | Purpose                                                                                                                         |
 | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
 | `NEXT_PUBLIC_DEMO_MODE`                                                                                                              | `1` for a `demo-*` project with emulators, `0` for real Firebase                                                                |
@@ -82,9 +92,13 @@ Get a Gemini API key in [Google AI Studio](https://aistudio.google.com/api-keys)
 | `FIREBASE_AUTH_EMULATOR_HOST`, `FIRESTORE_EMULATOR_HOST`, `FIREBASE_STORAGE_EMULATOR_HOST`                                           | Local-only host:port settings, absent on a real project                                                                         |
 | `AI_PROVIDER`, `GEMINI_API_KEY`                                                                                                      | `demo` (local only) or `gemini`; real provider key stays server-side                                                            |
 | `OPENAI_CHAT_MODEL`, `OPENAI_EMBED_MODEL`                                                                                            | Required legacy names for the configurable **Gemini** model IDs                                                                 |
-| `AI_DAILY_LIMIT`, `DEMO_PUBLIC_PREVIEW`                                                                                              | Optional per-user quota; public preview refuses admin and live Gemini calls                                                     |
+| `AI_DAILY_LIMIT`, `DEMO_PUBLIC_PREVIEW`                                                                                              | Optional per-user Gemini allowance (default 40/day, 12/minute); public preview refuses admin and live Gemini calls              |
 | `APP_BASE_URL`, `EVAL_ID_TOKEN`                                                                                                      | Evaluation/test origin; Firebase bearer for remote evaluation, never commit it                                                  |
 | `ALLOW_CATALOG_WRITE`, `ALLOW_ADMIN_GRANT`                                                                                           | Explicit hosted maintenance opt-in (`yes`), only in the maintenance environment                                                 |
+
+Hosted browser builds also need `NEXT_PUBLIC_FIREBASE_APP_CHECK_SITE_KEY` and `APP_CHECK_MODE=required` (default; `observe` is a staging rollout mode). App Check verifies the web app separately from Firebase Auth. `AI_PROJECT_DAILY_LIMIT` and `AI_PROJECT_PER_MINUTE` cap aggregate Gemini admissions across learner accounts. For authorized hosted CLI evaluation, provide short-lived `EVAL_ID_TOKEN` and `EVAL_APP_CHECK_TOKEN` in the shell, never in Git or command output. See [abuse controls and alerting](docs/ABUSE_CONTROLS.md).
+
+The profile’s **Learning time zone** controls the plan, streak, and rolling seven-calendar-day recap; choose `Asia/Karachi` for Pakistan time. Event timestamps and service quotas remain UTC. Legacy profiles use UTC until updated; new profiles become editable through the profile screen.
 
 ### Import an authorized curriculum
 
@@ -97,24 +111,24 @@ Copy the structure in [`SAMPLE_generative_ai.json`](data/sample/SAMPLE_generativ
 
 All routes below except `/api/health` require `Authorization: Bearer <Firebase ID token>`. JSON bodies require `Content-Type: application/json`. Errors use `{ "error": { "code": "…", "message": "…" } }`. Missing or invalid tokens return `401`.
 
-| Method and path                           | Input → output                                                                                             |
-| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `GET /api/health`                         | Process liveness → `{status:"ok"}` (not downstream readiness)                                              |
-| `GET / PUT /api/profile`                  | GET own profile; PUT onboarding fields → `{profile,admin}`                                                 |
-| `GET /api/catalog`, `GET /api/lesson/:id` | Published previews and full lesson content                                                                 |
-| `GET / POST /api/plan`                    | GET saved plan and refresh reason; POST `{uid,refresh?}` → `{days:[{date,lessonIds,goal,minutes,reason}]}` |
-| `GET / POST /api/tutor`                   | GET `?lessonId=` for recent chat; POST `{lessonId,mode,message,questionId?}` → newline-delimited frames    |
-| `POST /api/quiz/generate`                 | `{lessonId,n,topic?}` → public `questions` and provider label; answer keys are intentionally omitted       |
-| `POST /api/quiz/grade`                    | `{questionId,answer}` → `{correct,feedback}`                                                               |
-| `GET / POST /api/progress`                | GET `?lessonId=`; POST `{lessonId,studySeconds}` → `{completed}`                                           |
-| `GET /api/dashboard`                      | Learner progress, weak topics, current lesson, and badges                                                  |
-| `GET / POST /api/summary`                 | GET cache; POST `{}` → `{summary}` containing the weekly recap                                             |
-| `GET /api/certificate`                    | PDF only after track completion                                                                            |
-| `GET /api/admin`                          | Claim and current account checked → cohort overview                                                        |
-| `POST /api/admin/import`                  | Claim and current account checked; raw JSON file with `X-Filename` → revision and counts                   |
-| `POST /api/demo`                          | Signed-in `@sample.invalid` emulator session → isolated sample profile/history                             |
+| Method and path                           | Input → output                                                                                                               |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/health`                         | Process liveness → `{status:"ok"}` (not downstream readiness)                                                                |
+| `GET / PUT /api/profile`                  | GET own profile; PUT onboarding fields plus optional IANA `timeZone` → `{profile,admin}`                                     |
+| `GET /api/catalog`, `GET /api/lesson/:id` | Published previews and full lesson content                                                                                   |
+| `GET / POST /api/plan`                    | GET saved plan and refresh reason; POST `{uid,refresh?}` → `{days:[{date,lessonIds,goal,minutes,reason}]}`                   |
+| `GET / POST /api/tutor`                   | GET `?lessonId=` for recent chat; POST `{lessonId,mode,message,questionId?}` → newline-delimited frames                      |
+| `POST /api/quiz/generate`                 | `{lessonId,n,topic?}` → public `questions` and provider label; answer keys are intentionally omitted                         |
+| `POST /api/quiz/grade`                    | `{questionId,answer}` → `{correct,feedback}`                                                                                 |
+| `GET / POST /api/progress`                | GET `?lessonId=`; POST `{lessonId,interval?:{fromMs,throughMs},complete?:boolean}` → `{completed,studySeconds,serverTimeMs}` |
+| `GET /api/dashboard`                      | Learner progress, weak topics, current lesson, and badges                                                                    |
+| `GET / POST /api/summary`                 | GET cache; POST `{}` → `{summary}` containing the weekly recap                                                               |
+| `GET /api/certificate`                    | PDF only after track completion                                                                                              |
+| `GET /api/admin`                          | Claim and current account checked → cohort overview                                                                          |
+| `POST /api/admin/import`                  | Claim and current account checked; raw JSON file with `X-Filename` → revision and counts                                     |
+| `POST /api/demo`                          | Signed-in `@sample.invalid` emulator session → isolated sample profile/history                                               |
 
-Tutor frames are `{"type":"delta","text":"…"}`, then `{"type":"done","citations":[{"lessonId":"rag","chunkId":"rag--01"}]}`. A failure after headers uses an `error` frame. The server maps model evidence slots to retrieved IDs before releasing text. JSON Schema outputs are checked by Zod and by application validation. Timeouts, bounded transient retries, token caps, embedding caching, and transactional quotas control model cost. Logs contain provider usage and timings, not prompts or ID tokens.
+Tutor frames are `{"type":"delta","text":"…"}`, then `{"type":"done","citations":[{"lessonId":"rag","chunkId":"rag--01"}]}`. A failure after headers uses an `error` frame. The server maps model evidence slots to retrieved IDs before releasing text. JSON Schema outputs are checked by Zod and by application validation. Timeouts, bounded transient retries, token caps, embedding caching, and transactional quotas control model cost. Logs contain provider usage and timings, not prompts or ID tokens. Per-action API limits are independent of the Gemini allowance. Fixed hints, deterministic MCQ grading, keyless demo outputs, cached plans/recaps that skip inference, and admin imports do not spend it. A tutor request that calls both query embedding and chat consumes one Gemini admission.
 
 ## Testing and evaluation
 
@@ -142,6 +156,10 @@ Before running Playwright for the first time, install Chromium with `npx playwri
 
 Hosted GitHub Actions and Vercel: **NOT RUN**. The workflow is checked in, and local verification is recorded in [M9.txt](docs/eval/M9.txt).
 
+### Tutor quality beyond citation labels
+
+The stricter [SAMPLE quality set](data/sample/SAMPLE_tutor_quality_eval.json) tests cross-section reasoning, user and source injections, and incorrect or conflicting source text. `npm run ci:integration` runs `eval:quality` against fresh local emulators and saves answers, cited excerpts, independent reference facts, and automated diagnostics. Citation IDs and keyword matches are **not** correctness scores. For a live run on SAMPLE only, add `RUN_GEMINI_QUALITY=1` to `npm run verify:gemini` (adds provider calls). See the [claim-review rubric](docs/TUTOR_REVIEW.md) and current evidence in `docs/eval`.
+
 ### Screenshots
 
 | View              | Preview                                                                           |
@@ -155,15 +173,19 @@ Hosted GitHub Actions and Vercel: **NOT RUN**. The workflow is checked in, and l
 
 1. Create a real Firebase project. Enable Firestore and Email/Password and Google providers. Set up Cloud Storage if you need admin uploads. [Firebase requires Blaze billing for hosted Cloud Storage](https://firebase.google.com/docs/storage/faqs-storage-changes-announced-sept-2024); no-cost usage is still subject to quotas. Emulators do not require billing.
 2. From a trusted Firebase CLI session deploy rules and indexes: `npx firebase deploy --only firestore:rules,firestore:indexes,storage --project <project-id>`. If not using Storage uploads, omit `storage` and keep the bucket setting set to the intended project bucket name.
-3. Push the local repository to a GitHub repository you own and import it into Vercel as Next.js with Node 24.x. Set the hosted environment values above and remove all emulator variables. Never place a service-account JSON file or Gemini key in Git. Add the Vercel hostname to Firebase Auth authorized domains and test Google in a top-level tab.
+3. Push the local repository to a GitHub repository you own and import it into Vercel as Next.js with Node 24.x. Set the hosted environment values above, register App Check and configure edge protection as described in [the staging checklist](docs/ABUSE_CONTROLS.md), and remove all emulator variables. Never place a service-account JSON file or Gemini key in Git. Add the Vercel hostname to Firebase Auth authorized domains and test Google in a top-level tab.
 4. Seed and embed against the real backend from a trusted shell. Confirm `/api/health`, sign-in, lesson citations, grading, and admin upload as applicable. Use the appropriate test learner and separate staging credentials when running the eval remotely.
 
 **Docker alternative:** Configure `.env.local` for hosted Firebase and Gemini, then run `docker compose --env-file .env.local up --build`. Build args contain only public Firebase settings. The runtime is non-root, uses the Next.js standalone bundle, and has a liveness check. Docker and Compose have **not** been run in this sandbox. No Python service is part of this stack.
+
+## Verified source packaging
+
+From a Git checkout (with Git, Node, and `unzip` available), use `npm run release:check` to audit the committed tree, or `npm run release:zip` to build the audited source ZIP and its per-file SHA-256 manifest in `.release-local/`. The archive uses `git archive HEAD`, not a recursive workspace ZIP. Commit intended changes first. The check rejects ignored or local artifacts, symlinks, nested archives, and common credential patterns without printing secret values. The ZIP's member list must exactly match the audited source tree. `.env.example`, source, assets, and intentional evaluation records are included; local env files, build output, caches, dependency folders, and debug logs are not.
 
 ## Limitations and next steps
 
 - The demo has no live inference. It uses real emulator persistence, lexical vectors, curated questions, deterministic grade and planning, and an aggregate recap template. See [known gaps](docs/KNOWN_GAPS.md).
 - This is a bounded internship cohort app. Benchmark real retrieval, validate groundedness with independent questions and human claim-level review, then migrate to indexed ANN retrieval and precomputed cohort analytics if scale requires it.
-- Study duration is observed while a lesson tab is visible and only saved on completion. Certificates acknowledge completion in this app, not verified proficiency or an official Internee.pk credential. An extended certificate font and optional inactivity notifications are future work.
+- Study time is reported while the lesson tab is visible, every 15 seconds and on hide, navigation, and completion. The server bounds each interval and the cumulative lesson total; repeated and overlapping reports do not add the same time twice. Exit saves are best effort when a browser closes or is offline. Certificates acknowledge completion in this app, not verified proficiency or an official Internee.pk credential. An extended certificate font and optional inactivity notifications are future work.
 
 [Implementation assumptions](docs/ASSUMPTIONS.md) · [Demo script](docs/DEMO_SCRIPT.md) · [Known gaps](docs/KNOWN_GAPS.md)

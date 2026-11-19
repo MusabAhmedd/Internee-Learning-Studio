@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { timeZoneSchema } from "./learning-dates";
+import { studyIntervalSchema, STUDY_LESSON_MAX_SECONDS } from "./study-time";
 
 export function text(min: number, max: number, multiline = false) {
   return z
@@ -41,8 +43,10 @@ export const profileInputSchema = z.strictObject({
   level: levelSchema,
   weeklyHours: z.number().int().min(1).max(40),
   goal: text(5, 280, true),
+  timeZone: timeZoneSchema.optional(),
 });
 export const profileSchema = profileInputSchema.extend({
+  timeZone: timeZoneSchema.default("UTC"),
   createdAt: timestampSchema,
 });
 export const profileResponseSchema = z.strictObject({
@@ -242,15 +246,28 @@ export const hintCountSchema = z.strictObject({
 export type Attempt = z.infer<typeof attemptSchema>;
 export type Mastery = z.infer<typeof masterySchema>;
 
-export const progressInputSchema = z.strictObject({
+export const progressInputSchema = z
+  .strictObject({
+    lessonId: idSchema,
+    interval: studyIntervalSchema.optional(),
+    complete: z.boolean().default(false),
+  })
+  .refine(
+    ({ interval, complete }) => Boolean(interval || complete),
+    "Send a visible interval or mark the lesson complete.",
+  );
+export const progressSchema = z.strictObject({
   lessonId: idSchema,
-  studySeconds: z.number().int().min(0).max(7200),
-});
-export const progressSchema = progressInputSchema.extend({
   uid: uidSchema,
-  completedAt: timestampSchema,
+  studySeconds: z.number().int().min(0).max(STUDY_LESSON_MAX_SECONDS),
+  studyRemainderMs: z.number().int().min(0).max(999).optional(),
+  completedAt: timestampSchema.nullable(),
 });
-export const completionSchema = z.strictObject({ completed: z.boolean() });
+export const completionSchema = z.strictObject({
+  completed: z.boolean(),
+  studySeconds: progressSchema.shape.studySeconds,
+  serverTimeMs: z.number().int().nonnegative(),
+});
 export const planDaySchema = z.strictObject({
   date: z.iso.date(),
   lessonIds: z.array(idSchema).max(4),
@@ -326,6 +343,13 @@ export const dashboardSchema = z.strictObject({
 export const summarySchema = z.strictObject({
   uid: uidSchema,
   signature: revisionSchema.shape.revision,
+  period: z
+    .strictObject({
+      timeZone: timeZoneSchema,
+      start: z.iso.date(),
+      through: z.iso.date(),
+    })
+    .optional(),
   text: text(4, 800, true),
   createdAt: timestampSchema,
   provider: z.enum(["demo", "gemini"]),

@@ -3,7 +3,19 @@ import { z } from "zod";
 import { isDemo } from "./firebase-admin";
 import { HttpError } from "./http";
 
+export type ProviderOptions = {
+  signal?: AbortSignal;
+  admit: () => Promise<void>;
+};
 let client: OpenAI | undefined;
+
+async function admittedClient(options?: ProviderOptions) {
+  const client = gemini(); // Missing configuration must not spend a quota.
+  options?.signal?.throwIfAborted();
+  await options?.admit();
+  options?.signal?.throwIfAborted();
+  return client;
+}
 export function aiMode(): "demo" | "gemini" {
   const value = process.env.AI_PROVIDER ?? (isDemo() ? "demo" : "gemini");
   if (
@@ -127,12 +139,17 @@ export function logAi(
     total_tokens: number;
   } | null,
   status = "ok",
+  usageStatus: { attempted: boolean; upstreamStatus: number | null } = {
+    attempted: true,
+    upstreamStatus: null,
+  },
 ) {
   console.info(
     JSON.stringify({
       event,
       model,
       status,
+      ...usageStatus,
       ms: Math.round(performance.now() - start),
       inputTokens: usage?.prompt_tokens ?? null,
       outputTokens: usage?.completion_tokens ?? null,
@@ -140,31 +157,51 @@ export function logAi(
     }),
   );
 }
-export async function embed(input: string, signal?: AbortSignal) {
+const statusOf = (error: unknown) =>
+  error instanceof OpenAI.APIError ? (error.status ?? null) : null;
+
+export async function embed(input: string, options?: ProviderOptions) {
+  const signal = options?.signal;
   if (input.length > 8000 || !input.trim())
     throw new HttpError(
       422,
       "EMBED_INPUT",
       "Embedding input must be nonempty and within the token budget.",
     );
-  const model = embeddingModel();
   if (aiMode() === "demo") return embeddingSchema.parse(lexicalVector(input));
   const start = performance.now();
+  const deadline = signal
+    ? AbortSignal.any([signal, AbortSignal.timeout(10_000)])
+    : AbortSignal.timeout(10_000);
+  let attempted = false;
+  let model = "unconfigured";
   try {
-    const result = await gemini().embeddings.create(
+    model = embeddingModel();
+    const client = await admittedClient(
+      options ? { ...options, signal: deadline } : undefined,
+    );
+    attempted = true;
+    const result = await client.embeddings.create(
       { model, input, encoding_format: "float" },
       {
-        signal: signal
-          ? AbortSignal.any([signal, AbortSignal.timeout(10_000)])
-          : AbortSignal.timeout(10_000),
+        signal: deadline,
       },
     );
     const vector = embeddingSchema.parse(result.data[0]?.embedding);
     logAi("embedding", model, start, result.usage);
     return vector;
   } catch (error) {
-    const failure = aiFailure(error);
-    logAi("embedding", model, start, null, failure.code);
+    const failure = aiFailure(
+      deadline.aborted && !signal?.aborted ? deadline.reason : error,
+    );
+    logAi(
+      "embedding",
+      model,
+      start,
+      null,
+      signal?.aborted ? "cancelled" : failure.code,
+      { attempted, upstreamStatus: statusOf(error) },
+    );
     throw failure;
   }
 }
@@ -172,19 +209,27 @@ export async function embed(input: string, signal?: AbortSignal) {
 export async function* streamTutor(
   prompt: string,
   data: string,
-  signal: AbortSignal,
+  options: ProviderOptions,
 ) {
-  const model = configuredModel("OPENAI_CHAT_MODEL");
+  const { signal } = options;
+  let model = "unconfigured";
   const start = performance.now();
-  const deadline = AbortSignal.any([signal, AbortSignal.timeout(22_000)]);
+  const deadline = signal
+    ? AbortSignal.any([signal, AbortSignal.timeout(22_000)])
+    : AbortSignal.timeout(22_000);
   let usage: {
     prompt_tokens: number;
     completion_tokens: number;
     total_tokens: number;
   } | null = null;
   let status = "ok";
+  let attempted = false;
+  let upstreamStatus: number | null = null;
   try {
-    const stream = await gemini().chat.completions.create(
+    model = configuredModel("OPENAI_CHAT_MODEL");
+    const client = await admittedClient({ ...options, signal: deadline });
+    attempted = true;
+    const stream = await client.chat.completions.create(
       {
         model,
         stream: true,
@@ -215,9 +260,10 @@ export async function* streamTutor(
     }
   } catch (error) {
     const failure = aiFailure(
-      deadline.aborted && !signal.aborted ? deadline.reason : error,
+      deadline.aborted && !signal?.aborted ? deadline.reason : error,
     );
     status = failure.code;
+    upstreamStatus = statusOf(error);
     throw failure;
   } finally {
     logAi(
@@ -225,7 +271,8 @@ export async function* streamTutor(
       model,
       start,
       usage,
-      signal.aborted ? "cancelled" : status,
+      signal?.aborted ? "cancelled" : status,
+      { attempted, upstreamStatus },
     );
   }
 }
@@ -236,29 +283,35 @@ export async function structured<T>(
   data: string,
   schema: z.ZodType<T>,
   maxTokens: number,
-  signal?: AbortSignal,
+  options: ProviderOptions,
 ) {
+  const { signal } = options;
   if (data.length > 36_000)
     throw new HttpError(
       422,
       "AI_BUDGET",
       "This request exceeds the model input budget.",
     );
-  const model = configuredModel("OPENAI_CHAT_MODEL");
+  let model = "unconfigured";
   const start = performance.now();
   const deadline = signal
     ? AbortSignal.any([signal, AbortSignal.timeout(24_000)])
     : AbortSignal.timeout(24_000);
   let status = "ok";
+  let attempted = false;
+  let upstreamStatus: number | null = null;
   let usage: {
     prompt_tokens: number;
     completion_tokens: number;
     total_tokens: number;
   } | null = null;
   try {
+    model = configuredModel("OPENAI_CHAT_MODEL");
     const wire = z.toJSONSchema(schema, { target: "draft-7" });
     delete wire.$schema;
-    const response = await gemini().chat.completions.create(
+    const client = await admittedClient({ ...options, signal: deadline });
+    attempted = true;
+    const response = await client.chat.completions.create(
       {
         model,
         reasoning_effort: "minimal",
@@ -306,8 +359,12 @@ export async function structured<T>(
       deadline.aborted && !signal?.aborted ? deadline.reason : error,
     );
     status = failure.code;
+    upstreamStatus = statusOf(error);
     throw failure;
   } finally {
-    logAi(name, model, start, usage, status);
+    logAi(name, model, start, usage, signal?.aborted ? "cancelled" : status, {
+      attempted,
+      upstreamStatus,
+    });
   }
 }

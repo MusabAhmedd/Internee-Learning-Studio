@@ -1,37 +1,52 @@
 import { createHash } from "node:crypto";
 import { z } from "zod";
-import { attemptsInWeek, dashboardFor } from "./dashboard";
+import { dashboardFor } from "./dashboard";
 import { db } from "./firebase-admin";
+import { duringWeek, learningWeek } from "./learning-dates";
 import { HttpError } from "./http";
-import { takeAiQuota } from "./limits";
+import { providerAdmission, takeApiQuota } from "./limits";
 import { aiMode, structured } from "./openai";
 import { systemPrompt, untrustedData } from "./prompts";
-import { summaryResponseSchema, summarySchema } from "./schemas";
+import { profileSchema, summaryResponseSchema, summarySchema } from "./schemas";
 const wire = z.strictObject({ text: z.string().min(4).max(800) });
-export async function summaryFor(uid: string) {
+async function savedSummary(uid: string) {
   const snap = await db().doc(`summaries/${uid}`).get();
   const summary = snap.exists ? summarySchema.parse(snap.data()) : null;
   if (summary && summary.uid !== uid)
     throw new HttpError(403, "FORBIDDEN", "This summary is not yours.");
   return summary;
 }
-export async function writeSummary(uid: string, signal?: AbortSignal) {
+export async function summaryFor(uid: string, now = new Date()) {
+  const summary = await savedSummary(uid);
+  if (!summary?.period) return null;
+  const snapshot = await db().doc(`users/${uid}`).get();
+  if (!snapshot.exists) return null;
+  const week = learningWeek(now, profileSchema.parse(snapshot.data()).timeZone);
+  return summary.period.timeZone === week.timeZone &&
+    summary.period.start === week.start &&
+    summary.period.through === week.through
+    ? summary
+    : null;
+}
+export async function writeSummary(
+  uid: string,
+  signal?: AbortSignal,
+  now = new Date(),
+) {
+  await takeApiQuota(uid, "summary");
   const [context, prior] = await Promise.all([
-    dashboardFor(uid),
-    summaryFor(uid),
+    dashboardFor(uid, now),
+    savedSummary(uid),
   ]);
   const { board, profile, done, attempts } = context;
-  const recent = attemptsInWeek(attempts);
-  const now = new Date();
-  const start = new Date(now.getTime() - 6 * 86_400_000)
-    .toISOString()
-    .slice(0, 10);
+  const week = learningWeek(now, profile.timeZone);
+  const recent = attempts.filter((row) => duringWeek(row.at, week));
   const input = {
-    start,
-    through: now.toISOString().slice(0, 10),
+    ...week,
     track: profile.track,
-    completions: done.filter((row) => row.completedAt.slice(0, 10) >= start)
-      .length,
+    completions: done.filter(
+      (row) => row.completedAt && duringWeek(row.completedAt, week),
+    ).length,
     attempts: recent.length,
     correct: recent.filter((row) => row.correct).length,
     weakTopics: board.topics.filter((row) => row.weak).map((row) => row.topic),
@@ -43,7 +58,6 @@ export async function writeSummary(uid: string, signal?: AbortSignal) {
     .digest("hex");
   if (prior?.signature === signature)
     return summaryResponseSchema.parse({ summary: prior });
-  await takeAiQuota(uid);
   // NOT_IMPLEMENTED (demo provider only): model-written recap. Local recap summarizes real sample metrics by template.
   const output =
     provider === "demo"
@@ -56,11 +70,12 @@ export async function writeSummary(uid: string, signal?: AbortSignal) {
           untrustedData(input),
           wire,
           540,
-          signal,
+          { signal, admit: providerAdmission(uid) },
         );
   const checked = summarySchema.safeParse({
     uid,
     signature,
+    period: week,
     text: output.text,
     createdAt: now.toISOString(),
     provider,

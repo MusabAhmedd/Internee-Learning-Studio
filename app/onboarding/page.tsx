@@ -7,6 +7,7 @@ import { AuthLayout } from "@/components/auth-layout";
 import { useAuth } from "@/components/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Loading, Notice } from "@/components/ui/state";
+import { timeZoneSchema } from "@/lib/learning-dates";
 import { api, friendlyError } from "@/lib/client-api";
 import {
   levelSchema,
@@ -42,6 +43,20 @@ export default function Onboarding() {
     return () => controller.abort();
   }, [loading, router, sessionError, user, retry]);
 
+  const browserZone = timeZoneSchema.safeParse(
+    Intl.DateTimeFormat().resolvedOptions().timeZone,
+  );
+  const zone =
+    existing?.timeZone ?? (browserZone.success ? browserZone.data : "UTC");
+  const zones = [
+    ...new Set([
+      "UTC",
+      "Asia/Karachi",
+      zone,
+      ...(Intl.supportedValuesOf?.("timeZone") ?? []),
+    ]),
+  ];
+
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!user) return;
@@ -51,7 +66,9 @@ export default function Onboarding() {
       weeklyHours: Number(data.get("weeklyHours")),
     });
     if (!fields.success) {
-      setError("Check your name, study hours, and goal before continuing.");
+      setError(
+        "Check your name, study hours, time zone, and goal before continuing.",
+      );
       return;
     }
     setBusy(true);
@@ -140,6 +157,23 @@ export default function Onboarding() {
               />
             </label>
           </div>
+          <label>
+            Learning time zone
+            <select
+              name="timeZone"
+              defaultValue={zone}
+              aria-describedby="zone-note"
+            >
+              {zones.map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+            </select>
+            <small id="zone-note" className="smallprint">
+              Sets the day boundary for your plan, streak, and recap.
+            </small>
+          </label>
           <label>
             Learning goal
             <textarea

@@ -10,6 +10,7 @@ async function main() {
   const session = await evalSession();
   const headers = {
     Authorization: `Bearer ${session.token}`,
+    ...(session.appCheck ? { "X-Firebase-AppCheck": session.appCheck } : {}),
     "Content-Type": "application/json",
   };
   try {

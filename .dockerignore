@@ -18,3 +18,23 @@ docs
 .arena/
 
 .sudo_as_admin_successful
+
+.eval-local/
+
+.release-local/
+*.log*
+*.tar
+*.tgz
+*.tar.gz
+*.7z
+*.bak
+*.pem
+*.key
+*.p12
+*.pfx
+build/
+dist/
+out/
+coverage/
+next-env.d.ts
+*.tsbuildinfo

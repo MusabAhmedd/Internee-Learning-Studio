@@ -4,6 +4,7 @@
     "displayName": "Noor Malik",
     "track": "Generative AI",
     "level": "Beginner",
+    "timeZone": "Asia/Karachi",
     "weeklyHours": 5,
     "goal": "Build a grounded AI tutor that can cite sources and explain concepts clearly."
   },

@@ -1,7 +1,8 @@
 import { createHash } from "node:crypto";
 import { db } from "./firebase-admin";
 import { HttpError } from "./http";
-import { aiMode, streamTutor } from "./openai";
+import { aiMode, streamTutor, terms, type ProviderOptions } from "./openai";
+import { sections } from "./sections";
 import { systemPrompt, untrustedData } from "./prompts";
 import { retrieve, type IndexedChunk } from "./rag";
 import {
@@ -86,32 +87,54 @@ export function isInjection(message: string) {
     )
   );
 }
+// Reject obvious pasted role overrides before any extractive output or model call.
+// This is not a general prompt-injection detector or a factual verifier.
+const containsRoleOverride = (source: string) =>
+  /(?:^|\n)\s*(?:\[+\s*)?(?:system|developer)\s*(?:\]+)?\s*:\s*(?:ignore|disregard|override|respond|output|print|reveal|return)\b/i.test(
+    source,
+  );
 export async function tutorAnswer(
   view: LessonView,
   mode: TutorMode,
   question: string,
   history: TutorTurn[],
-  signal: AbortSignal,
+  provider: ProviderOptions,
   emit: (value: string) => void,
   beforeHint?: () => Promise<void>,
 ) {
   if (isInjection(question)) return staticAnswer(abstain, [], emit);
-  const genericSummary =
-    mode === "summarize" &&
-    /^(summarize|recap)( the| this)?( lesson)?[.!]?$/i.test(question);
-  let chunks = await retrieve(view, question, signal, genericSummary);
-  if (!chunks.length && mode === "hint" && beforeHint)
-    chunks = await retrieve(view, question, signal, true);
-  if (!chunks.length) return staticAnswer(abstain, [], emit);
   if (mode === "hint") {
-    // Do not send a solution or options to a model in hint mode.
+    // A fixed hint never needs a remote query embedding or the answer key.
+    const words = terms(question);
+    const ranked = sections(view.lesson.id, view.lesson.content)
+      .map((section) => {
+        const heading = new Set(terms(section.title));
+        const source = new Set(terms(section.text));
+        const score = words.reduce(
+          (sum, term) =>
+            sum + (heading.has(term) ? 2 : 0) + (source.has(term) ? 1 : 0),
+          0,
+        );
+        return { section, score };
+      })
+      .sort((a, b) => b.score - a.score);
+    const best = ranked[0];
+    if (!best || (!best.score && !beforeHint))
+      return staticAnswer(abstain, [], emit);
     await beforeHint?.();
     return staticAnswer(
       "What clue in the source helps rule out an incorrect approach? Describe that clue first, then use it to work out your next step.",
-      [cite(chunks[0])],
+      [{ lessonId: view.lesson.id, chunkId: best.section.id }],
       emit,
     );
   }
+  const genericSummary =
+    mode === "summarize" &&
+    /^(summarize|recap)( the| this)?( lesson)?[.!]?$/i.test(question);
+  const chunks = (
+    await retrieve(view, question, provider, genericSummary)
+  ).filter((row) => !containsRoleOverride(row.text));
+  if (!chunks.length) return staticAnswer(abstain, [], emit);
   if (aiMode() === "demo") {
     // NOT_IMPLEMENTED (demo provider only): model inference. This no-key mode is an extractive source preview.
     if (mode === "quiz")
@@ -156,7 +179,7 @@ export async function tutorAnswer(
     answer += value;
     emit(value);
   };
-  for await (const delta of streamTutor(prompt, input, signal)) {
+  for await (const delta of streamTutor(prompt, input, provider)) {
     if (citations) {
       write(delta);
       continue;

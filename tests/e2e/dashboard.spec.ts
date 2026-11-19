@@ -23,6 +23,7 @@ test("sample cohort heatmap, learner plan, and focused practice reflect the seed
   await page.getByRole("link", { name: "View study plan" }).click();
   await page.getByRole("button", { name: "Generate study plan" }).click();
   await expect(page.locator(".plan-day")).toHaveCount(7);
+  await expect(page.getByText(/Dates in Asia\/Karachi/)).toBeVisible();
   await page.getByRole("link", { name: "Overview", exact: true }).click();
   await page.getByRole("link", { name: "Practice this" }).click();
   await expect(page.getByText("Focus topic: RAG")).toBeVisible();

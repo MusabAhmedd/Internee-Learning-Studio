@@ -1,30 +1,17 @@
 import { listCatalog } from "./catalog";
 import { db, isDemo } from "./firebase-admin";
+import { studyStreak } from "./learning-dates";
 import { HttpError } from "./http";
 import { isWeak } from "./mastery";
 import { recentAttempts, topicMastery } from "./practice-store";
-import { completions } from "./progress-store";
-import { dashboardSchema, profileSchema, type Attempt } from "./schemas";
+import { progressFor } from "./progress-store";
+import { dashboardSchema, profileSchema } from "./schemas";
 
-const day = (when: Date) => when.toISOString().slice(0, 10);
-const DAY = 86_400_000;
-export function studyStreak(dates: string[], now = new Date()) {
-  const active = new Set(dates.map((value) => value.slice(0, 10)));
-  const today = now.getTime();
-  const offset = active.has(day(now)) ? 0 : 1;
-  let streak = 0;
-  while (active.has(day(new Date(today - DAY * (offset + streak))))) streak++;
-  return streak;
-}
-export function attemptsInWeek(attempts: Attempt[], now = new Date()) {
-  const begin = new Date(now.getTime() - 6 * DAY).toISOString().slice(0, 10);
-  return attempts.filter((attempt) => attempt.at.slice(0, 10) >= begin);
-}
-export async function dashboardFor(uid: string) {
+export async function dashboardFor(uid: string, now = new Date()) {
   const [profileDoc, catalog, marks, attempts, skills] = await Promise.all([
     db().doc(`users/${uid}`).get(),
     listCatalog(),
-    completions(uid),
+    progressFor(uid),
     recentAttempts(uid),
     topicMastery(uid),
   ]);
@@ -46,13 +33,18 @@ export async function dashboardFor(uid: string) {
     })),
   );
   const ids = new Set(lessons.map((lesson) => lesson.id));
-  const done = marks.filter((mark) => ids.has(mark.lessonId));
+  const trackMarks = marks.filter((mark) => ids.has(mark.lessonId));
+  const done = trackMarks.filter((mark) => mark.completedAt !== null);
   const completed = new Set(done.map((mark) => mark.lessonId));
   const relevant = attempts.filter((attempt) => ids.has(attempt.lessonId));
-  const streak = studyStreak([
-    ...relevant.map((attempt) => attempt.at),
-    ...done.map((mark) => mark.completedAt),
-  ]);
+  const streak = studyStreak(
+    [
+      ...relevant.map((row) => row.at),
+      ...done.flatMap((row) => (row.completedAt ? [row.completedAt] : [])),
+    ],
+    now,
+    profile.timeZone,
+  );
   const topics = [...new Set(lessons.flatMap((item) => item.topics))];
   const mastery = new Map(skills.map((row) => [row.topic, row]));
   const certificateAvailable =
@@ -61,7 +53,10 @@ export async function dashboardFor(uid: string) {
     sample: isDemo() || modules.some((item) => item.source === "SAMPLE"),
     completed: completed.size,
     total: lessons.length,
-    studySeconds: done.reduce((total, item) => total + item.studySeconds, 0),
+    studySeconds: trackMarks.reduce(
+      (total, item) => total + item.studySeconds,
+      0,
+    ),
     streak,
     correct: relevant.filter((attempt) => attempt.correct).length,
     attempts: relevant.length,

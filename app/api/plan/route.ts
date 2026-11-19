@@ -1,5 +1,5 @@
 import { authenticated, HttpError, json, readJson } from "@/lib/http";
-import { takeAiQuota } from "@/lib/limits";
+import { takeApiQuota } from "@/lib/limits";
 import { createPlan, planContext } from "@/lib/plan";
 import { planInputSchema, planSchema } from "@/lib/schemas";
 export const maxDuration = 45;
@@ -14,9 +14,9 @@ export const POST = authenticated(async (request, claims) => {
       "FORBIDDEN",
       "You can only plan for your own account.",
     );
+  await takeApiQuota(claims.uid, "plan");
   const context = await planContext(claims.uid);
   if (context.status.plan && !context.status.reason && !input.refresh)
     return json(planSchema.parse({ days: context.status.plan.days }));
-  await takeAiQuota(claims.uid);
   return json(await createPlan(claims.uid, context, request.signal));
 });

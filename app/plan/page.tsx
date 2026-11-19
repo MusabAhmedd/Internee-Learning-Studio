@@ -14,6 +14,7 @@ const labelFor = {
   curriculum: "The catalog changed.",
   profile: "Your study profile changed.",
 };
+// These are already learner-local calendar labels. UTC formatting avoids shifting a date-only string.
 const dayLabel = new Intl.DateTimeFormat("en", {
   weekday: "long",
   month: "short",
@@ -58,7 +59,8 @@ function StudyPlan({ context }: { context: Workspace }) {
                 {data.provider === "demo"
                   ? "SAMPLE · local planner"
                   : "Personalized with Gemini"}{" "}
-                · Dates in UTC{data.reason ? ` · ${labelFor[data.reason]}` : ""}
+                · Dates in {context.profile.timeZone}
+                {data.reason ? ` · ${labelFor[data.reason]}` : ""}
               </p>
             </div>
             <Button

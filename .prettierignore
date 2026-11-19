@@ -16,3 +16,7 @@ firebase-emulator-data
 .gitconfig
 .netrc
 .arena/
+
+.eval-local/
+
+.release-local/
