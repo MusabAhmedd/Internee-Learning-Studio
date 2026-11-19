@@ -154,7 +154,7 @@ Before running Playwright for the first time, install Chromium with `npx playwri
 | Unit / rules / HTTP API / browser tests             | **5 / 5 / 4 / 4 passed**       | `docs/eval/M9.txt`                                             |
 | Production npm audit                                | **0 vulnerabilities reported** | `npm audit --omit=dev --audit-level=high` · `docs/eval/M9.txt` |
 
-Hosted GitHub Actions and Vercel: **NOT RUN**. The workflow is checked in, and local verification is recorded in [M9.txt](docs/eval/M9.txt).
+The table above is the original M9 baseline. Current corrections, their workflow checks, and evidence are in [the review log](docs/REVIEW_FIXES.md). Hosted GitHub Actions and Vercel: **NOT RUN**.
 
 ### Tutor quality beyond citation labels
 
@@ -176,7 +176,7 @@ The stricter [SAMPLE quality set](data/sample/SAMPLE_tutor_quality_eval.json) te
 3. Push the local repository to a GitHub repository you own and import it into Vercel as Next.js with Node 24.x. Set the hosted environment values above, register App Check and configure edge protection as described in [the staging checklist](docs/ABUSE_CONTROLS.md), and remove all emulator variables. Never place a service-account JSON file or Gemini key in Git. Add the Vercel hostname to Firebase Auth authorized domains and test Google in a top-level tab.
 4. Seed and embed against the real backend from a trusted shell. Confirm `/api/health`, sign-in, lesson citations, grading, and admin upload as applicable. Use the appropriate test learner and separate staging credentials when running the eval remotely.
 
-**Docker alternative:** Configure `.env.local` for hosted Firebase and Gemini, then run `docker compose --env-file .env.local up --build`. Build args contain only public Firebase settings. The runtime is non-root, uses the Next.js standalone bundle, and has a liveness check. Docker and Compose have **not** been run in this sandbox. No Python service is part of this stack.
+**Docker alternative:** Configure `.env.local` for hosted Firebase and Gemini, then run `docker compose --env-file .env.local up --build`. Build args contain only public Firebase settings. The runtime is non-root, uses the Next.js standalone bundle, and has a liveness check. Docker/Compose build, non-root startup and liveness passed with placeholders; authenticated cloud dependencies were **NOT RUN** in the container. See [the hosted verification checklist](docs/HOSTED_VERIFICATION.md). No Python service is part of this stack.
 
 ## Verified source packaging
 

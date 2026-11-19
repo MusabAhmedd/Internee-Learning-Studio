@@ -1,0 +1,170 @@
+2026-11-19 review: Docker/Compose smoke from the audited fe82030 source ZIP, with no cloud credentials.
+Workspace authorization preflight: no hosted Firebase or App Check configuration, Gemini key, Git remote, or Vercel connection. No cloud operations attempted.
+$ docker compose --env-file .env.local -p studio-review config --quiet (passed); build and runtime commands/output follow.
+Docker Server 26.1.5+dfsg1 · storage=overlay2 · cgroups=2
+Docker Compose version 2.26.1-4
+
+$ docker compose --env-file .env.local -p studio-review build
+#0 building with "default" instance using docker driver
+
+#1 [studio internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.15kB done
+#1 DONE 0.0s
+
+#2 [studio internal] load metadata for docker.io/library/node:24.22.3-bookworm-slim@sha256:dc26ae92c9fb15cf6b1d63e20f0944b2efe0f115b20e00be48fb23fceb061c54
+#2 DONE 1.0s
+
+#3 [studio internal] load .dockerignore
+#3 transferring context: 377B done
+#3 DONE 0.0s
+
+#4 [studio internal] load build context
+#4 transferring context: 1.14MB 0.0s done
+#4 DONE 0.0s
+
+#5 [studio build 1/6] FROM docker.io/library/node:24.22.3-bookworm-slim@sha256:dc26ae92c9fb15cf6b1d63e20f0944b2efe0f115b20e00be48fb23fceb061c54
+#5 resolve docker.io/library/node:24.22.3-bookworm-slim@sha256:dc26ae92c9fb15cf6b1d63e20f0944b2efe0f115b20e00be48fb23fceb061c54 done
+#5 sha256:0e2646ab57e77b7a384a0cb59b6815b182c77e1f9c3ba36bd8435bd9c4e6680e 1.93kB / 1.93kB done
+#5 sha256:5ba3c1ded6eada2ea16582327a87c672fb3889fca362ee3ac0d78ed742b583c0 6.71kB / 6.71kB done
+#5 sha256:dd051e1b8c92ff101fa3071ab97ea4924885942f15644e01c3dc095764e863e3 0B / 28.25MB 0.1s
+#5 sha256:22a7c5e442cd30f0c37eb73f2f6d91be1c6b63bd1c4278641b042fe77b260f33 0B / 3.31kB 0.1s
+#5 sha256:5030a48eb5b08bea228f0db8440fed216cf91b5ca4d999bc2a692c2eb0a60114 0B / 51.10MB 0.1s
+#5 sha256:dc26ae92c9fb15cf6b1d63e20f0944b2efe0f115b20e00be48fb23fceb061c54 3.93kB / 3.93kB done
+#5 sha256:22a7c5e442cd30f0c37eb73f2f6d91be1c6b63bd1c4278641b042fe77b260f33 3.31kB / 3.31kB 0.2s done
+#5 sha256:e727da478d47d626146e734dd426cad789beb1fe49c55a06a175621d30f31064 0B / 1.71MB 0.3s
+#5 sha256:e727da478d47d626146e734dd426cad789beb1fe49c55a06a175621d30f31064 1.05MB / 1.71MB 1.2s
+#5 sha256:dd051e1b8c92ff101fa3071ab97ea4924885942f15644e01c3dc095764e863e3 6.29MB / 28.25MB 1.3s
+#5 sha256:5030a48eb5b08bea228f0db8440fed216cf91b5ca4d999bc2a692c2eb0a60114 3.15MB / 51.10MB 1.3s
+#5 sha256:e727da478d47d626146e734dd426cad789beb1fe49c55a06a175621d30f31064 1.71MB / 1.71MB 1.2s done
+#5 sha256:c34f02d00fde0767e1607c15d336cb71414e607acb0b4e63680a37c007b76204 0B / 448B 1.3s
+#5 sha256:dd051e1b8c92ff101fa3071ab97ea4924885942f15644e01c3dc095764e863e3 28.25MB / 28.25MB 1.5s done
+#5 sha256:5030a48eb5b08bea228f0db8440fed216cf91b5ca4d999bc2a692c2eb0a60114 25.17MB / 51.10MB 1.5s
+#5 sha256:c34f02d00fde0767e1607c15d336cb71414e607acb0b4e63680a37c007b76204 448B / 448B 1.3s done
+#5 sha256:5030a48eb5b08bea228f0db8440fed216cf91b5ca4d999bc2a692c2eb0a60114 47.19MB / 51.10MB 1.6s
+#5 extracting sha256:dd051e1b8c92ff101fa3071ab97ea4924885942f15644e01c3dc095764e863e3
+#5 sha256:5030a48eb5b08bea228f0db8440fed216cf91b5ca4d999bc2a692c2eb0a60114 51.10MB / 51.10MB 1.7s done
+#5 extracting sha256:dd051e1b8c92ff101fa3071ab97ea4924885942f15644e01c3dc095764e863e3 1.7s done
+#5 extracting sha256:22a7c5e442cd30f0c37eb73f2f6d91be1c6b63bd1c4278641b042fe77b260f33 done
+#5 extracting sha256:5030a48eb5b08bea228f0db8440fed216cf91b5ca4d999bc2a692c2eb0a60114 0.1s
+#5 extracting sha256:5030a48eb5b08bea228f0db8440fed216cf91b5ca4d999bc2a692c2eb0a60114 2.0s done
+#5 extracting sha256:e727da478d47d626146e734dd426cad789beb1fe49c55a06a175621d30f31064
+#5 extracting sha256:e727da478d47d626146e734dd426cad789beb1fe49c55a06a175621d30f31064 0.1s done
+#5 extracting sha256:c34f02d00fde0767e1607c15d336cb71414e607acb0b4e63680a37c007b76204
+#5 extracting sha256:c34f02d00fde0767e1607c15d336cb71414e607acb0b4e63680a37c007b76204 done
+#5 DONE 5.5s
+
+#6 [studio build 2/6] WORKDIR /studio
+#6 DONE 0.1s
+
+#7 [studio build 3/6] COPY package.json package-lock.json ./
+#7 DONE 0.0s
+
+#8 [studio build 4/6] RUN npm ci --no-audit --no-fund
+#8 8.855 npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
+#8 9.933 npm warn deprecated json-ptr@3.1.1: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+#8 11.14 npm warn deprecated uuid@9.0.1: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+#8 11.65 npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+#8 17.34 npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+#8 31.18
+#8 31.18 added 1092 packages in 31s
+#8 31.18 npm warn install-scripts 4 packages have install scripts not yet covered by allowScripts:
+#8 31.18 npm warn install-scripts   @firebase/util@1.15.3 (postinstall: node ./postinstall.js)
+#8 31.18 npm warn install-scripts   esbuild@0.28.2 (postinstall: node install.js)
+#8 31.18 npm warn install-scripts   protobufjs@7.6.6 (postinstall: node scripts/postinstall)
+#8 31.18 npm warn install-scripts   re2@1.27.1 (install: install-from-cache --artifact build/Release/re2.node --host-var RE2_DOWNLOAD_MIRROR --skip-path-var RE2_DOWNLOAD_SKIP_PATH --skip-ver-var RE2_DOWNLOAD_SKIP_VER --force-build-var RE2_DOWNLOAD_FORCE_BUILD || node-gyp -j max rebuild)
+#8 31.18 npm warn install-scripts
+#8 31.18 npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+#8 31.19 npm notice
+#8 31.19 npm notice New major version of npm available! 11.19.1 -> 12.2.3
+#8 31.19 npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.3
+#8 31.19 npm notice To update run: npm install -g npm@12.2.3
+#8 31.19 npm notice
+#8 DONE 31.5s
+
+#9 [studio build 5/6] COPY . .
+#9 DONE 0.1s
+
+#10 [studio build 6/6] RUN npm run build
+#10 0.265
+#10 0.265 > internee-learning-studio@1.0.0 build
+#10 0.265 > next build
+#10 0.265
+#10 0.803 ▲ Next.js 16.4.6 (Turbopack)
+#10 0.877 ✓ Running next.config.ts took 73ms
+#10 0.893 - Experiments (use with caution):
+#10 0.893   · cpus: 2
+#10 0.893
+#10 0.922   Creating an optimized production build ...
+#10 13.96 ✓ Compiled successfully in 13.0s
+#10 13.96   Running TypeScript ...
+#10 22.36   Finished TypeScript in 8.4s ...
+#10 22.36   Collecting page data using 2 workers ...
+#10 23.92   Generating static pages using 2 workers (0/25) ...
+#10 24.13   Generating static pages using 2 workers (6/25)
+#10 24.17   Generating static pages using 2 workers (12/25)
+#10 24.28   Generating static pages using 2 workers (18/25)
+#10 24.34 ✓ Generating static pages using 2 workers (25/25) in 422ms
+#10 24.34   Finalizing page optimization ...
+#10 24.97
+#10 24.97 Route (app)
+#10 24.97 ┌ ○ /
+#10 24.97 ├ ○ /_not-found
+#10 24.97 ├ ○ /admin
+#10 24.97 ├ ƒ /api/admin
+#10 24.97 ├ ƒ /api/admin/import
+#10 24.97 ├ ƒ /api/catalog
+#10 24.97 ├ ƒ /api/certificate
+#10 24.97 ├ ƒ /api/dashboard
+#10 24.97 ├ ƒ /api/demo
+#10 24.97 ├ ƒ /api/health
+#10 24.97 ├ ƒ /api/lesson/[id]
+#10 24.97 ├ ƒ /api/plan
+#10 24.97 ├ ƒ /api/profile
+#10 24.97 ├ ƒ /api/progress
+#10 24.97 ├ ƒ /api/quiz/generate
+#10 24.97 ├ ƒ /api/quiz/grade
+#10 24.97 ├ ƒ /api/summary
+#10 24.97 ├ ƒ /api/tutor
+#10 24.97 ├ ○ /dashboard
+#10 24.97 ├ ƒ /emulator/auth/[page]
+#10 24.97 ├ ○ /icon.svg
+#10 24.97 ├ ƒ /identitytoolkit.googleapis.com/v1/[operation]
+#10 24.97 ├ ƒ /lesson/[id]
+#10 24.97 ├ ○ /login
+#10 24.97 ├ ○ /modules
+#10 24.97 ├ ○ /onboarding
+#10 24.97 ├ ○ /plan
+#10 24.97 └ ƒ /securetoken.googleapis.com/v1/token
+#10 24.97
+#10 24.97
+#10 24.97 ○  (Static)   prerendered as static content
+#10 24.97 ƒ  (Dynamic)  server-rendered on demand
+#10 24.97
+#10 DONE 25.1s
+
+#11 [studio runtime 3/5] COPY --from=build --chown=node:node /studio/.next/standalone ./
+#11 DONE 0.4s
+
+#12 [studio runtime 4/5] COPY --from=build --chown=node:node /studio/.next/static ./.next/static
+#12 DONE 0.0s
+
+#13 [studio runtime 5/5] COPY --from=build --chown=node:node /studio/public ./public
+#13 DONE 0.1s
+
+#14 [studio] exporting to image
+#14 exporting layers
+#14 exporting layers 0.3s done
+#14 writing image sha256:cf4a755b8fd31608136659b6a4b621a4a01d9fd15722196b4a6b3129089160ce done
+#14 naming to docker.io/library/studio-review-studio done
+#14 DONE 0.3s
+$ docker compose --env-file .env.local -p studio-review up --wait --wait-timeout 80 --no-build
+ Container studio-review-studio-1  Running
+ Container studio-review-studio-1  Waiting
+ Container studio-review-studio-1  Healthy
+state=running health=healthy user=node port=127.0.0.1:3000
+Runtime Node v24.22.3, uid 1000, no .env.local/.git in the application directory.
+$ curl -fsS -w " HTTP %{http_code}\n" http://127.0.0.1:3000/api/health
+{"status":"ok"} HTTP 200
+Protected profile returned HTTP 401 without credentials.
+SAMPLE Auth relay returned HTTP 404 with demo disabled.
+Docker/Compose smoke passed using public placeholders; Firebase, OAuth, App Check exchange, and Gemini were not contacted.

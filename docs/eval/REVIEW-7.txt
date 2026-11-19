@@ -1,0 +1,30 @@
+$ unzip -tq internee-learning-studio.zip
+No errors detected in compressed data of internee-learning-studio.zip.
+Exact original workspace ZIP: all 139 regular-file paths match e423daf, no extra ZIP members of file type.
+$ npm run release:check
+
+> internee-learning-studio@1.0.0 release:check
+> node scripts/release.mjs --check
+
+Release source gate: 166 regular files from fe82030f2283572baaa986b9fd4946ca8a4fc797; path policy, ignore rules, and credential-pattern scan passed.
+$ npm run release:zip
+
+> internee-learning-studio@1.0.0 release:zip
+> node scripts/release.mjs
+
+Release source gate: 166 regular files from fe82030f2283572baaa986b9fd4946ca8a4fc797; path policy, ignore rules, and credential-pattern scan passed.
+ZIP integrity and exact member set passed. SHA-256 852611e95dab48792aca8d4ff7c5aae143f6beee0cd4b1f0122d9681a8271882
+Archive and full manifest: /home/user/.release-local/internee-learning-studio-reviewed.zip{,.manifest.txt}
+$ npm run release:zip && cmp <first ZIP> <second ZIP>
+
+> internee-learning-studio@1.0.0 release:zip
+> node scripts/release.mjs
+
+Release source gate: 166 regular files from fe82030f2283572baaa986b9fd4946ca8a4fc797; path policy, ignore rules, and credential-pattern scan passed.
+ZIP integrity and exact member set passed. SHA-256 852611e95dab48792aca8d4ff7c5aae143f6beee0cd4b1f0122d9681a8271882
+Archive and full manifest: /home/user/.release-local/internee-learning-studio-reviewed.zip{,.manifest.txt}
+Reproducibility: two packages from the same commit were byte-identical.
+$ git diff e423daf HEAD --exit-code -- package-lock.json
+Dependency lockfile unchanged.
+Disallowed tracked entry: ".env.local"
+Negative release test passed: a tracked synthetic .env.local was rejected without printing its contents.

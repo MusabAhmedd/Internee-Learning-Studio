@@ -44,3 +44,9 @@ The local run is in `docs/eval/REVIEW-4.txt` and `docs/eval/REVIEW-4-quality-sam
 ## 7. Release hygiene
 
 `scripts/release.mjs` builds only from a committed Git tree. It checks a source-path allowlist, forbidden filename/directory policy, repository ignore rules, regular-file modes, and common secret patterns. It verifies ZIP integrity and checks every member against the expected path set. The sidecar records the commit, ZIP SHA-256, and every committed file's hash. `.gitignore`, `.dockerignore`, `.prettierignore`, and the CI workflow account for the release artifacts. The exact previous workspace ZIP was also re-inspected, but it cannot establish what was present in a different downloaded copy.
+
+## 8. Deployment verification
+
+Docker Compose was installed in this sandbox for the review. The audited source built with the pinned base image. The container reached healthy with Node 24.22.3 as UID 1000; `/api/health` returned 200, an unauthenticated profile returned 401, and the SAMPLE Auth relay returned 404 with demo disabled. The build used public placeholders and the container did not contact Firebase, Google OAuth, App Check or Gemini (`docs/eval/REVIEW-8.txt`).
+
+Authorized hosted Firebase, real Google OAuth, App Check/WAF/monitoring, Vercel and remote GitHub Actions remain **NOT RUN**. `docs/HOSTED_VERIFICATION.md` separates the local smoke test from the staged evidence to collect. Existing source and dependency pins were retained; there were no npm dependency changes.

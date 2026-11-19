@@ -1,3 +1,8 @@
-NOT RUN: live Gemini API (key not supplied), hosted Auth/Firestore/Storage and Google OAuth,
-GitHub Actions on a remote branch, Vercel deployment, Docker/Compose runtime.
-Local tests and evaluation use Firebase emulators and the explicit no-key SAMPLE provider.
+Review status, 2026-11-19:
+NOT RUN: Real Gemini embeddings and workflows (authorized key absent), independent human claim review,
+hosted Firebase Auth/Firestore/Storage, real Google OAuth, hosted App Check and edge/alert configuration,
+remote GitHub Actions, and Vercel staging/deployment (no authorized staging access).
+LOCAL ONLY: Firebase emulators, mocked/simulated Google Auth provider, keyless SAMPLE evaluation.
+DONE LOCAL: Docker/Compose build and startup with public placeholders, health 200, non-root runtime,
+unauthenticated profile 401, and SAMPLE relay unavailable in hosted mode. No cloud dependencies contacted.
+Evidence: REVIEW-2.txt, REVIEW-4.txt, REVIEW-8.txt, and ../HOSTED_VERIFICATION.md.
