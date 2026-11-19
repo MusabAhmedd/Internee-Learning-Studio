@@ -144,17 +144,17 @@ npm run eval:tutor
 npm run ci:integration
 ```
 
-Before running Playwright for the first time, install Chromium with `npx playwright install --with-deps chromium`. [Milestone logs](docs/eval) include the actual commands and output. The [labelled evaluation](docs/eval/tutor-demo.txt) scores citation-label agreement and off-topic refusals over the SAMPLE questions. Those are keyless demo results, not a claim about Gemini or a measure of whether each statement is supported. **Live Gemini evaluation: NOT RUN.** The local first-text smoke test and the full benchmark report separate timings because they use different request sets.
+Before running Playwright for the first time, install Chromium with `npx playwright install --with-deps chromium`. [Milestone logs](docs/eval) include the actual commands and output. The [labelled evaluation](docs/eval/REVIEW-FINAL.txt) scores citation-label agreement and off-topic refusals over the SAMPLE questions. Those are keyless demo results, not a claim about Gemini or a measure of whether each statement is supported. **Live Gemini evaluation: NOT RUN.** The local first-text smoke test and the full benchmark report separate timings because they use different request sets.
 
-| Measured locally                                    | Result                         | Evidence                                                       |
-| --------------------------------------------------- | ------------------------------ | -------------------------------------------------------------- |
-| In-scope answers with the expected citation         | **100% (16/16)**               | `npm run eval:tutor` · `docs/eval/tutor-demo.txt`              |
-| Off-topic cases declined                            | **100% (4/4)**                 | Same labelled benchmark                                        |
-| Time to first visible text (warmed demo HTTP route) | **28.4 ms p50 / 43.5 ms p95**  | Same labelled benchmark                                        |
-| Unit / rules / HTTP API / browser tests             | **5 / 5 / 4 / 4 passed**       | `docs/eval/M9.txt`                                             |
-| Production npm audit                                | **0 vulnerabilities reported** | `npm audit --omit=dev --audit-level=high` · `docs/eval/M9.txt` |
+| Measured locally                                    | Result                         | Evidence                                                                 |
+| --------------------------------------------------- | ------------------------------ | ------------------------------------------------------------------------ |
+| In-scope answers with the expected citation         | **100% (16/16)**               | `npm run eval:tutor` · `docs/eval/REVIEW-FINAL.txt`                      |
+| Off-topic cases declined                            | **100% (4/4)**                 | Same labelled benchmark                                                  |
+| Time to first visible text (warmed demo HTTP route) | **37.1 ms p50 / 61.6 ms p95**  | Same labelled benchmark                                                  |
+| Unit / rules / HTTP API / browser tests             | **13 / 5 / 9 / 5 passed**      | `docs/eval/REVIEW-FINAL.txt`                                             |
+| Production npm audit                                | **0 vulnerabilities reported** | `npm audit --omit=dev --audit-level=high` · `docs/eval/REVIEW-FINAL.txt` |
 
-The table above is the original M9 baseline. Current corrections, their workflow checks, and evidence are in [the review log](docs/REVIEW_FIXES.md). Hosted GitHub Actions and Vercel: **NOT RUN**.
+The table above is from the fresh review source ZIP, with command output in [REVIEW-FINAL.txt](docs/eval/REVIEW-FINAL.txt). The M9 baseline remains in [M9.txt](docs/eval/M9.txt). See [the review log](docs/REVIEW_FIXES.md) for the corrections. Hosted GitHub Actions and Vercel: **NOT RUN**.
 
 ### Tutor quality beyond citation labels
 

@@ -50,3 +50,18 @@ The local run is in `docs/eval/REVIEW-4.txt` and `docs/eval/REVIEW-4-quality-sam
 Docker Compose was installed in this sandbox for the review. The audited source built with the pinned base image. The container reached healthy with Node 24.22.3 as UID 1000; `/api/health` returned 200, an unauthenticated profile returned 401, and the SAMPLE Auth relay returned 404 with demo disabled. The build used public placeholders and the container did not contact Firebase, Google OAuth, App Check or Gemini (`docs/eval/REVIEW-8.txt`).
 
 Authorized hosted Firebase, real Google OAuth, App Check/WAF/monitoring, Vercel and remote GitHub Actions remain **NOT RUN**. `docs/HOSTED_VERIFICATION.md` separates the local smoke test from the staged evidence to collect. Existing source and dependency pins were retained; there were no npm dependency changes.
+
+## Final regression
+
+`docs/eval/REVIEW-FINAL.txt` records a fresh source ZIP extraction, per-file SHA-256 verification, `npm ci` on Node 24.22.3, format/lint/typecheck, production build, Chromium, emulator integration, missing-key guard, and production dependency audit. The run passed 13 unit, 5 rules, 9 HTTP API and 5 Chromium cases; the audit reported 0 vulnerabilities. The SAMPLE citation benchmark got 16/16 expected citations and 4/4 abstentions. The stricter quality set's misses are not concealed by those results.
+
+| Review requirement                                  | Status                                                                             | Evidence                                                                          |
+| --------------------------------------------------- | ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Separate provider, ordinary, and admin limits       | Done locally                                                                       | `docs/eval/REVIEW-1.txt`, `tests/api.test.ts`                                     |
+| Real Gemini provider verification                   | Not done — no authorized key                                                       | Guard and verification harness: `docs/eval/REVIEW-2.txt`, `npm run verify:gemini` |
+| Visible study time                                  | Done locally                                                                       | `docs/eval/REVIEW-3.txt`, `tests/e2e/study-time.spec.ts`                          |
+| Harder evaluation and human claim review            | Partial — runner and rubric exercised; independent review and live quality NOT RUN | `docs/eval/REVIEW-4.txt`, `docs/TUTOR_REVIEW.md`                                  |
+| Learner-local date boundaries                       | Done locally                                                                       | `docs/eval/REVIEW-5.txt`, `tests/learning-dates.test.ts`                          |
+| Abuse controls and monitoring                       | Partial — shared caps and policy tested; hosted configuration pending              | `docs/eval/REVIEW-6.txt`, `docs/ABUSE_CONTROLS.md`                                |
+| Reproducible clean source archive                   | Done                                                                               | `docs/eval/REVIEW-7.txt`, `npm run release:zip`, archive sidecar                  |
+| Docker, hosted Firebase/OAuth, Vercel and remote CI | Partial — local Docker/Compose smoke passed; hosted gates NOT RUN                  | `docs/eval/REVIEW-8.txt`, `docs/HOSTED_VERIFICATION.md`                           |
