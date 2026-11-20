@@ -14,15 +14,32 @@ async function fetchKeys() {
   const now = Date.now();
   if (keysCache && now - keysCache.fetchedAt < KEYS_TTL_MS)
     return keysCache.keys;
+  console.error(
+    JSON.stringify({ event: "fetching_google_keys", url: KEYS_URL }),
+  );
   const res = await fetch(KEYS_URL, { cache: "no-store" });
-  if (!res.ok) throw new Error("Failed to fetch Google public keys");
+  if (!res.ok) {
+    console.error(
+      JSON.stringify({
+        event: "google_keys_fetch_failed",
+        status: res.status,
+      }),
+    );
+    throw new Error("Failed to fetch Google public keys");
+  }
   const keys: Record<string, string> = await res.json();
+  console.error(
+    JSON.stringify({
+      event: "google_keys_fetched",
+      keyCount: Object.keys(keys).length,
+      kids: Object.keys(keys),
+    }),
+  );
   keysCache = { keys, fetchedAt: now };
   return keys;
 }
 
 function decodeJwtSegment<T = Record<string, unknown>>(segment: string): T {
-  // Node's base64url decoder handles unpadded segments natively.
   const decoded = Buffer.from(segment, "base64url").toString("utf-8");
   try {
     return JSON.parse(decoded) as T;
@@ -75,6 +92,9 @@ export async function verifyFirebaseIdToken(
       "Unsupported token algorithm.",
     );
 
+  console.error(
+    JSON.stringify({ event: "looking_up_key", kid: header.kid }),
+  );
   const keys = await fetchKeys();
   const cert = keys[header.kid];
   if (!cert) {
@@ -93,7 +113,25 @@ export async function verifyFirebaseIdToken(
     );
   }
 
-  const publicKey = createPublicKey({ key: cert, format: "pem" });
+  let publicKey;
+  try {
+    publicKey = createPublicKey({ key: cert, format: "pem" });
+    console.error(
+      JSON.stringify({ event: "public_key_created", type: publicKey.type }),
+    );
+  } catch (err) {
+    console.error(
+      JSON.stringify({
+        event: "public_key_creation_failed",
+        error: err instanceof Error ? err.message : String(err),
+      }),
+    );
+    throw new HttpError(
+      401,
+      "UNAUTHENTICATED",
+      "Invalid token signing key format.",
+    );
+  }
 
   const data = `${headerB64}.${payloadB64}`;
   let signature: Buffer;
@@ -122,7 +160,16 @@ export async function verifyFirebaseIdToken(
       publicKey,
       signature,
     );
-  } catch {
+    console.error(
+      JSON.stringify({ event: "signature_verification", valid }),
+    );
+  } catch (err) {
+    console.error(
+      JSON.stringify({
+        event: "signature_verification_error",
+        error: err instanceof Error ? err.message : String(err),
+      }),
+    );
     valid = false;
   }
   if (!valid) {
@@ -213,6 +260,14 @@ export async function verifyFirebaseIdToken(
       "Invalid token issued at.",
     );
   }
+
+  console.error(
+    JSON.stringify({
+      event: "token_verified",
+      uid: claims.sub,
+      email: claims.email,
+    }),
+  );
 
   return {
     uid: String(claims.sub ?? ""),
