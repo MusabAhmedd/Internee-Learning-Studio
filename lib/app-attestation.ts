@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { adminAppCheck, isDemo } from "./firebase-admin";
+import { isDemo } from "./firebase-admin";
 import { HttpError } from "./http-error";
 
 const modeSchema = z.enum(["observe", "required"]);
@@ -9,10 +9,10 @@ export async function checkAppAttestation(
   token: string | null,
   appId: string,
   mode: Mode,
-  verify: Verify,
+  verify?: Verify,
 ) {
   let outcome: "missing" | "invalid" | "wrong_app" | "verified" = "missing";
-  if (token) {
+  if (token && verify) {
     outcome = "invalid";
     if (
       token.length <= 8192 &&
@@ -56,6 +56,5 @@ export async function attestRequest(request: Request) {
     request.headers.get("X-Firebase-AppCheck"),
     appId,
     parsed.data,
-    (token) => adminAppCheck().verifyToken(token),
   );
 }

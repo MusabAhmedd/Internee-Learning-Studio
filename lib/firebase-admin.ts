@@ -5,7 +5,6 @@ import {
   initializeApp,
   type App,
 } from "firebase-admin/app";
-import { getAppCheck } from "firebase-admin/app-check";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
@@ -53,6 +52,5 @@ function app(): App {
 }
 
 export const adminAuth = () => getAuth(app());
-export const adminAppCheck = () => getAppCheck(app());
 export const db = () => getFirestore(app());
 export const bucket = () => getStorage(app()).bucket();
