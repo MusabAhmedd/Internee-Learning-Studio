@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
-import { adminAuth, isDemo } from "../lib/firebase-admin";
+import { adminAuth } from "../lib/firebase-admin-auth";
+import { isDemo } from "../lib/firebase-admin";
 
 export const origin = process.env.APP_BASE_URL ?? "http://127.0.0.1:3000";
 export async function evalSession(role?: "admin") {

@@ -1,7 +1,7 @@
-import type { DecodedIdToken } from "firebase-admin/auth";
+import type { FirebaseIdTokenClaims } from "./verify-id-token";
 import { z } from "zod";
 import { attestRequest } from "./app-attestation";
-import { adminAuth } from "./firebase-admin";
+import { verifyFirebaseIdToken } from "./verify-id-token";
 import { uidSchema } from "./schemas";
 
 import { HttpError } from "./http-error";
@@ -31,28 +31,28 @@ export function errorBody(error: unknown) {
   };
 }
 
-export async function identity(request: Request): Promise<DecodedIdToken> {
+export async function identity(
+  request: Request,
+): Promise<FirebaseIdTokenClaims> {
   const token = request.headers
     .get("authorization")
     ?.match(/^Bearer ([A-Za-z0-9_.-]{20,8192})$/i)?.[1];
   if (!token)
     throw new HttpError(401, "UNAUTHENTICATED", "Please sign in to continue.");
-  const auth = adminAuth();
-  try {
-    const claims = await auth.verifyIdToken(token);
-    uidSchema.parse(claims.uid);
-    return claims;
-  } catch {
+  const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+  if (!projectId)
     throw new HttpError(
-      401,
-      "UNAUTHENTICATED",
-      "Your session is invalid or expired. Sign in again.",
+      503,
+      "CONFIG_ERROR",
+      "Server is not configured. Contact the administrator.",
     );
-  }
+  const claims = await verifyFirebaseIdToken(token, projectId);
+  uidSchema.parse(claims.uid);
+  return claims;
 }
 
 export function authenticated(
-  handler: (request: Request, claims: DecodedIdToken) => Promise<Response>,
+  handler: (request: Request, claims: FirebaseIdTokenClaims) => Promise<Response>,
 ) {
   return async (request: Request) => {
     try {

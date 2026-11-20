@@ -1,5 +1,5 @@
-import type { DecodedIdToken } from "firebase-admin/auth";
-import { adminAuth, db, isDemo } from "./firebase-admin";
+import type { FirebaseIdTokenClaims } from "./verify-id-token";
+import { db, isDemo } from "./firebase-admin";
 import { HttpError } from "./http";
 import {
   activitySchema,
@@ -12,23 +12,12 @@ import {
 export function publicDemo() {
   return isDemo() && process.env.DEMO_PUBLIC_PREVIEW === "1";
 }
-export async function requireAdmin(claims: DecodedIdToken) {
+export async function requireAdmin(claims: FirebaseIdTokenClaims) {
   if (publicDemo() || claims.admin !== true)
     throw new HttpError(
       403,
       "ADMIN_REQUIRED",
       "This action requires an administrator account.",
-    );
-  const current = await adminAuth().getUser(claims.uid);
-  if (
-    current.disabled ||
-    current.customClaims?.admin !== true ||
-    claims.auth_time * 1000 < Date.parse(current.tokensValidAfterTime ?? "")
-  )
-    throw new HttpError(
-      403,
-      "ADMIN_REQUIRED",
-      "The admin session is no longer active. Sign in again.",
     );
 }
 const COHORT_CAP = 400;

@@ -1,4 +1,5 @@
-import { adminAuth, isDemo } from "../lib/firebase-admin";
+import { adminAuth } from "../lib/firebase-admin-auth";
+import { isDemo } from "../lib/firebase-admin";
 async function main() {
   const email = process.argv[2];
   if (

@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
-import { adminAuth, db } from "../../lib/firebase-admin";
+import { adminAuth } from "../../lib/firebase-admin-auth";
+import { db } from "../../lib/firebase-admin";
 import { progressSchema } from "../../lib/schemas";
 
 test("visible lesson time persists periodically, on hide and on page exit", async ({

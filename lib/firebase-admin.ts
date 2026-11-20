@@ -5,7 +5,6 @@ import {
   initializeApp,
   type App,
 } from "firebase-admin/app";
-import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
 
@@ -13,7 +12,7 @@ export function isDemo() {
   return process.env.NEXT_PUBLIC_DEMO_MODE === "1";
 }
 
-function app(): App {
+export function app(): App {
   if (typeof window !== "undefined")
     throw new Error("Admin SDK is server-only.");
   const projectId = process.env.FIREBASE_PROJECT_ID;
@@ -51,6 +50,5 @@ function app(): App {
   return initializeApp({ projectId, storageBucket, credential });
 }
 
-export const adminAuth = () => getAuth(app());
 export const db = () => getFirestore(app());
 export const bucket = () => getStorage(app()).bucket();

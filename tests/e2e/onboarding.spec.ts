@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { expect, test } from "@playwright/test";
-import { adminAuth, db, isDemo } from "../../lib/firebase-admin";
+import { adminAuth } from "../../lib/firebase-admin-auth";
+import { db, isDemo } from "../../lib/firebase-admin";
 import { profileSchema, progressSchema } from "../../lib/schemas";
 
 test("email signup persists an onboarding profile in Firestore across reload", async ({
