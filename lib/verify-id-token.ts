@@ -68,12 +68,21 @@ export async function verifyFirebaseIdToken(
 
   const keys = await fetchKeys();
   const cert = keys[header.kid];
-  if (!cert)
+  if (!cert) {
+    console.error(
+      JSON.stringify({
+        event: "token_verify_failed",
+        reason: "unknown_kid",
+        kid: header.kid,
+        availableKids: Object.keys(keys),
+      }),
+    );
     throw new HttpError(
       401,
       "UNAUTHENTICATED",
       "Unknown token signing key.",
     );
+  }
 
   const publicKey = createPublicKey({ key: cert, format: "pem" });
 
@@ -91,17 +100,30 @@ export async function verifyFirebaseIdToken(
   } catch {
     valid = false;
   }
-  if (!valid)
+  if (!valid) {
+    console.error(
+      JSON.stringify({
+        event: "token_verify_failed",
+        reason: "invalid_signature",
+      }),
+    );
     throw new HttpError(
       401,
       "UNAUTHENTICATED",
       "Invalid token signature.",
     );
+  }
 
   let claims: Record<string, unknown>;
   try {
     claims = decodeJwt(payloadB64);
   } catch {
+    console.error(
+      JSON.stringify({
+        event: "token_verify_failed",
+        reason: "invalid_payload",
+      }),
+    );
     throw new HttpError(
       401,
       "UNAUTHENTICATED",
@@ -109,33 +131,69 @@ export async function verifyFirebaseIdToken(
     );
   }
 
-  if (claims.iss !== `${ISSUER}/${projectId}`)
+  if (claims.iss !== `${ISSUER}/${projectId}`) {
+    console.error(
+      JSON.stringify({
+        event: "token_verify_failed",
+        reason: "invalid_issuer",
+        expected: `${ISSUER}/${projectId}`,
+        actual: claims.iss,
+      }),
+    );
     throw new HttpError(
       401,
       "UNAUTHENTICATED",
       "Invalid token issuer.",
     );
-  if (claims.aud !== projectId)
+  }
+  if (claims.aud !== projectId) {
+    console.error(
+      JSON.stringify({
+        event: "token_verify_failed",
+        reason: "invalid_audience",
+        expected: projectId,
+        actual: claims.aud,
+      }),
+    );
     throw new HttpError(
       401,
       "UNAUTHENTICATED",
       "Invalid token audience.",
     );
+  }
   const exp = Number(claims.exp);
   const iat = Number(claims.iat);
   const now = Math.floor(Date.now() / 1000);
-  if (!exp || exp <= now)
+  if (!exp || exp <= now) {
+    console.error(
+      JSON.stringify({
+        event: "token_verify_failed",
+        reason: "token_expired",
+        exp,
+        now,
+      }),
+    );
     throw new HttpError(
       401,
       "UNAUTHENTICATED",
       "Token expired.",
     );
-  if (!iat || iat > now + 60)
+  }
+  if (!iat || iat > now + 60) {
+    console.error(
+      JSON.stringify({
+        event: "token_verify_failed",
+        reason: "invalid_iat",
+        iat,
+        now,
+      }),
+    );
     throw new HttpError(
       401,
       "UNAUTHENTICATED",
       "Invalid token issued at.",
     );
+  }
 
   return {
     uid: String(claims.sub ?? ""),
