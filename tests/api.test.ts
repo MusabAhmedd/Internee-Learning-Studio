@@ -609,3 +609,31 @@ test("completing a track unlocks a valid PDF via the authenticated certificate r
     await session.dispose();
   }
 });
+
+test("lesson pages chain to the next lesson across module boundaries", async () => {
+  const session = await evalSession();
+  try {
+    const catalog = await listCatalog();
+    const ordered = catalog.modules
+      .filter((item) => item.track === "Generative AI")
+      .sort((a, b) => a.order - b.order)
+      .flatMap((item) =>
+        item.lessons
+          .sort((a, b) => a.order - b.order)
+          .map((lesson) => lesson.id),
+      );
+    for (const [index, lessonId] of ordered.entries()) {
+      const result = await call(`/api/lesson/${lessonId}`, session.token);
+      assert.equal(result.status, 200, lessonId);
+      const body = await result.json();
+      const expected = ordered[index + 1] ?? null;
+      assert.equal(
+        body.nextLessonId,
+        expected,
+        `${lessonId} should chain to the next lesson`,
+      );
+    }
+  } finally {
+    await session.dispose();
+  }
+});

@@ -133,11 +133,49 @@ export async function getLesson(id: string) {
       "This lesson is no longer available.",
     );
   const next = siblings.docs.findIndex((candidate) => candidate.id === id) + 1;
+  let nextLessonId: string | null = siblings.docs[next]?.id ?? null;
+  if (!nextLessonId) {
+    // Continue across modules within the same track so a lesson sequence
+    // never stops at a module boundary.
+    nextLessonId = await nextLessonAcrossModules(
+      database,
+      moduleId,
+      moduleSnap.exists ? moduleSchema.parse(moduleSnap.data()) : null,
+    );
+  }
   return lessonResponseSchema.parse({
     lesson: { ...lessonSchema.parse(lessonSnap.data()), id },
     module: { ...moduleSchema.parse(moduleSnap.data()), id: moduleId },
-    nextLessonId: siblings.docs[next]?.id ?? null,
+    nextLessonId,
   });
+}
+
+export async function nextLessonAcrossModules(
+  database: ReturnType<typeof db>,
+  currentModuleId: string,
+  currentModule: ReturnType<typeof moduleSchema.parse> | null,
+): Promise<string | null> {
+  if (!currentModule) return null;
+  const modules = await database
+    .collection("modules")
+    .orderBy("order")
+    .limit(12)
+    .get();
+  const laterSameTrack = modules.docs.find(
+    (doc) =>
+      doc.id !== currentModuleId &&
+      (doc.data() as { track?: string; order?: number }).track ===
+        currentModule.track &&
+      (doc.data() as { order?: number }).order !== undefined &&
+      (doc.data() as { order?: number }).order! > currentModule.order,
+  );
+  if (!laterSameTrack) return null;
+  const firstLesson = await laterSameTrack.ref
+    .collection("lessons")
+    .orderBy("order")
+    .limit(1)
+    .get();
+  return firstLesson.docs[0]?.id ?? null;
 }
 
 export async function seedQuestions(moduleId: string, lessonId: string) {

@@ -156,6 +156,8 @@ Before running Playwright for the first time, install Chromium with `npx playwri
 
 The table above is from the fresh review source ZIP, with command output in [REVIEW-FINAL.txt](docs/eval/REVIEW-FINAL.txt). The M9 baseline remains in [M9.txt](docs/eval/M9.txt). See [the review log](docs/REVIEW_FIXES.md) for the corrections. Hosted GitHub Actions and Vercel: **NOT RUN**.
 
+Live Gemini provider workflows were verified locally against the Firebase Emulator Suite with an authorized Gemini key (never committed or logged): embeddings via `gemini-embedding-001`, streaming tutor with citations, MCQ and short-answer quiz generation, short-answer rubric grading, seven-day study plan, weekly recap, quota admission, and timeout/failure handling. Independent human claim-level review ([docs/TUTOR_REVIEW.md](docs/TUTOR_REVIEW.md)) and hosted rollout remain **NOT RUN** and require the hosting credentials described below.
+
 ### Tutor quality beyond citation labels
 
 The stricter [SAMPLE quality set](data/sample/SAMPLE_tutor_quality_eval.json) tests cross-section reasoning, user and source injections, and incorrect or conflicting source text. `npm run ci:integration` runs `eval:quality` against fresh local emulators and saves answers, cited excerpts, independent reference facts, and automated diagnostics. Citation IDs and keyword matches are **not** correctness scores. For a live run on SAMPLE only, add `RUN_GEMINI_QUALITY=1` to `npm run verify:gemini` (adds provider calls). See the [claim-review rubric](docs/TUTOR_REVIEW.md) and current evidence in `docs/eval`.

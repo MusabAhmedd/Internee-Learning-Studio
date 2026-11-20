@@ -38,7 +38,7 @@ function gemini() {
   return (client ??= new OpenAI({
     apiKey: key,
     baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/",
-    timeout: 8000,
+    timeout: 20_000,
     maxRetries: 1,
   }));
 }
