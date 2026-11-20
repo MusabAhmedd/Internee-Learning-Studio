@@ -61,8 +61,8 @@ export default function Login() {
     }
     const data = await res.json();
     if (!data.profile) {
-      await signOut(browserAuth());
-      setError("No account profile found. Please create an account first.");
+      // Signed in but no profile yet: send to onboarding.
+      router.replace("/onboarding");
       return;
     }
     router.replace("/dashboard");
