@@ -24,8 +24,25 @@ async function fetchKeys() {
 function decodeJwt<T = Record<string, unknown>>(token: string): T {
   const [, payload] = token.split(".");
   if (!payload) throw new Error("Invalid JWT");
-  const decoded = Buffer.from(payload, "base64url").toString("utf-8");
-  return JSON.parse(decoded) as T;
+  // Base64url may be unpadded; add padding before decoding.
+  const padded = payload.padEnd(
+    payload.length + (4 - (payload.length % 4)) % 4,
+    "=",
+  );
+  const decoded = Buffer.from(padded, "base64url").toString("utf-8");
+  try {
+    return JSON.parse(decoded) as T;
+  } catch {
+    console.error(
+      JSON.stringify({
+        event: "token_verify_failed",
+        reason: "payload_json_parse_failed",
+        decodedLength: decoded.length,
+        firstChars: decoded.slice(0, 80),
+      }),
+    );
+    throw new Error("Invalid JWT");
+  }
 }
 
 export type FirebaseIdTokenClaims = {
@@ -49,8 +66,12 @@ export async function verifyFirebaseIdToken(
   const [headerB64, payloadB64, signatureB64] = parts;
   let header: { alg?: string; kid?: string; typ?: string };
   try {
+    const paddedHeader = headerB64.padEnd(
+      headerB64.length + (4 - (headerB64.length % 4)) % 4,
+      "=",
+    );
     header = JSON.parse(
-      Buffer.from(headerB64, "base64url").toString("utf-8"),
+      Buffer.from(paddedHeader, "base64url").toString("utf-8"),
     );
   } catch {
     throw new HttpError(
@@ -87,7 +108,11 @@ export async function verifyFirebaseIdToken(
   const publicKey = createPublicKey({ key: cert, format: "pem" });
 
   const data = `${headerB64}.${payloadB64}`;
-  const signature = Buffer.from(signatureB64, "base64url");
+  const paddedSig = signatureB64.padEnd(
+    signatureB64.length + (4 - (signatureB64.length % 4)) % 4,
+    "=",
+  );
+  const signature = Buffer.from(paddedSig, "base64url");
 
   let valid = false;
   try {
