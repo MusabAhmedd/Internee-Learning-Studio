@@ -46,9 +46,20 @@ export async function identity(
       "CONFIG_ERROR",
       "Server is not configured. Contact the administrator.",
     );
-  const claims = await verifyFirebaseIdToken(token, projectId);
-  uidSchema.parse(claims.uid);
-  return claims;
+  try {
+    const claims = await verifyFirebaseIdToken(token, projectId);
+    uidSchema.parse(claims.uid);
+    return claims;
+  } catch (err) {
+    console.error(
+      JSON.stringify({
+        event: "token_verify_failed",
+        code: err instanceof HttpError ? err.code : "unknown",
+        projectId,
+      }),
+    );
+    throw err;
+  }
 }
 
 export function authenticated(
