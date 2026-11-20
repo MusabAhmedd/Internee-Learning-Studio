@@ -20,6 +20,7 @@ export function errorBody(error: unknown) {
     JSON.stringify({
       event: "request_failed",
       kind: error instanceof Error ? error.name : "unknown",
+      message: error instanceof Error ? error.message : String(error),
     }),
   );
   return {
@@ -85,7 +86,19 @@ export function authenticated(
   return async (request: Request) => {
     try {
       const claims = await identity(request);
+      console.error(
+        JSON.stringify({
+          event: "auth_passed",
+          uid: claims.uid,
+        }),
+      );
       await attestRequest(request);
+      console.error(
+        JSON.stringify({
+          event: "handler_start",
+          uid: claims.uid,
+        }),
+      );
       return await handler(request, claims);
     } catch (err) {
       const value = errorBody(err);
