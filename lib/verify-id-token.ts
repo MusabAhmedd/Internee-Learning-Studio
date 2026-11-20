@@ -1,4 +1,4 @@
-import { verify, X509Certificate } from "node:crypto";
+import { createPublicKey, verify } from "node:crypto";
 import { HttpError } from "./http-error";
 
 const KEYS_URL =
@@ -75,8 +75,7 @@ export async function verifyFirebaseIdToken(
       "Unknown token signing key.",
     );
 
-  const certificate = new X509Certificate(cert);
-  const publicKey = certificate.publicKey;
+  const publicKey = createPublicKey({ key: cert, format: "pem" });
 
   const data = `${headerB64}.${payloadB64}`;
   const signature = Buffer.from(signatureB64, "base64url");
