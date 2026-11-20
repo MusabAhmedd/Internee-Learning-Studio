@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
@@ -9,6 +9,7 @@ import {
   signInWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithPopup,
+  signOut,
 } from "firebase/auth";
 import { AuthLayout } from "@/components/auth-layout";
 import { useAuth } from "@/components/auth-provider";
@@ -39,11 +40,33 @@ export default function Login() {
   const [register, setRegister] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const { user, loading, error: sessionError } = useAuth();
   const router = useRouter();
-  useEffect(() => {
-    if (user) router.replace("/dashboard");
-  }, [router, user]);
+
+  async function checkProfileAndRedirect() {
+    const current = browserAuth().currentUser;
+    if (!current) {
+      setError("Could not restore your session. Sign in again.");
+      return;
+    }
+    const idToken = await current.getIdToken();
+    const res = await fetch("/api/profile", {
+      headers: { Authorization: `Bearer ${idToken}` },
+    });
+    if (!res.ok) {
+      await signOut(browserAuth());
+      setError("Sign-in failed. Please try again.");
+      return;
+    }
+    const data = await res.json();
+    if (!data.profile) {
+      await signOut(browserAuth());
+      setError("No account profile found. Please create an account first.");
+      return;
+    }
+    router.replace("/dashboard");
+  }
 
   async function emailSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -53,10 +76,15 @@ export default function Login() {
     setBusy("email");
     setError(null);
     try {
-      if (register)
+      if (register) {
         await createUserWithEmailAndPassword(browserAuth(), email, secret);
-      else await signInWithEmailAndPassword(browserAuth(), email, secret);
-      router.replace("/dashboard");
+        // Do not auto-open the dashboard: ask the user to sign in instead.
+        await signOut(browserAuth());
+        setSuccess("Account created. Please sign in below.");
+        return;
+      }
+      await signInWithEmailAndPassword(browserAuth(), email, secret);
+      await checkProfileAndRedirect();
     } catch (err) {
       setError(authMessage(err));
     } finally {
@@ -69,7 +97,7 @@ export default function Login() {
     setError(null);
     try {
       await signInWithPopup(browserAuth(), new GoogleAuthProvider());
-      router.replace("/dashboard");
+      await checkProfileAndRedirect();
     } catch (err) {
       setError(authMessage(err));
     } finally {
@@ -86,6 +114,9 @@ export default function Login() {
           ? "Set up your Learning Studio profile."
           : "Continue to your personalized learning workspace."}
       </p>
+      {success && (
+        <Notice>{success}</Notice>
+      )}
       {(error || sessionError) && <Notice>{error ?? sessionError}</Notice>}
       {loading || user ? (
         <Loading label="Checking session…" />
@@ -154,6 +185,7 @@ export default function Login() {
               onClick={() => {
                 setRegister(!register);
                 setError(null);
+                setSuccess(null);
               }}
             >
               {register ? "Sign in" : "Create account"}
