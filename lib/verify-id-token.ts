@@ -21,27 +21,20 @@ async function fetchKeys() {
   return keys;
 }
 
-function decodeJwt<T = Record<string, unknown>>(token: string): T {
-  const [, payload] = token.split(".");
-  if (!payload) throw new Error("Invalid JWT");
-  // Base64url may be unpadded; add padding before decoding.
-  const padded = payload.padEnd(
-    payload.length + (4 - (payload.length % 4)) % 4,
-    "=",
-  );
-  const decoded = Buffer.from(padded, "base64url").toString("utf-8");
+function decodeJwtSegment<T = Record<string, unknown>>(segment: string): T {
+  // Node's base64url decoder handles unpadded segments natively.
+  const decoded = Buffer.from(segment, "base64url").toString("utf-8");
   try {
     return JSON.parse(decoded) as T;
   } catch {
     console.error(
       JSON.stringify({
-        event: "token_verify_failed",
-        reason: "payload_json_parse_failed",
-        decodedLength: decoded.length,
-        firstChars: decoded.slice(0, 80),
+        event: "jwt_segment_decode_failed",
+        segmentLength: segment.length,
+        firstChars: decoded.slice(0, 120),
       }),
     );
-    throw new Error("Invalid JWT");
+    throw new Error("JWT segment decode failed");
   }
 }
 
@@ -64,20 +57,15 @@ export async function verifyFirebaseIdToken(
       "Invalid session token.",
     );
   const [headerB64, payloadB64, signatureB64] = parts;
+
   let header: { alg?: string; kid?: string; typ?: string };
   try {
-    const paddedHeader = headerB64.padEnd(
-      headerB64.length + (4 - (headerB64.length % 4)) % 4,
-      "=",
-    );
-    header = JSON.parse(
-      Buffer.from(paddedHeader, "base64url").toString("utf-8"),
-    );
+    header = decodeJwtSegment(headerB64);
   } catch {
     throw new HttpError(
       401,
       "UNAUTHENTICATED",
-      "Invalid session token.",
+      "Invalid session token header.",
     );
   }
   if (header.alg !== "RS256" || !header.kid)
@@ -108,11 +96,23 @@ export async function verifyFirebaseIdToken(
   const publicKey = createPublicKey({ key: cert, format: "pem" });
 
   const data = `${headerB64}.${payloadB64}`;
-  const paddedSig = signatureB64.padEnd(
-    signatureB64.length + (4 - (signatureB64.length % 4)) % 4,
-    "=",
-  );
-  const signature = Buffer.from(paddedSig, "base64url");
+  let signature: Buffer;
+  try {
+    signature = Buffer.from(signatureB64, "base64url");
+  } catch {
+    console.error(
+      JSON.stringify({
+        event: "token_verify_failed",
+        reason: "signature_base64_failed",
+        signatureLength: signatureB64.length,
+      }),
+    );
+    throw new HttpError(
+      401,
+      "UNAUTHENTICATED",
+      "Invalid token signature encoding.",
+    );
+  }
 
   let valid = false;
   try {
@@ -141,14 +141,8 @@ export async function verifyFirebaseIdToken(
 
   let claims: Record<string, unknown>;
   try {
-    claims = decodeJwt(payloadB64);
+    claims = decodeJwtSegment(payloadB64);
   } catch {
-    console.error(
-      JSON.stringify({
-        event: "token_verify_failed",
-        reason: "invalid_payload",
-      }),
-    );
     throw new HttpError(
       401,
       "UNAUTHENTICATED",

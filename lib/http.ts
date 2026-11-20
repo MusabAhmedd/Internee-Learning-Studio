@@ -34,11 +34,28 @@ export function errorBody(error: unknown) {
 export async function identity(
   request: Request,
 ): Promise<FirebaseIdTokenClaims> {
-  const token = request.headers
-    .get("authorization")
-    ?.match(/^Bearer ([A-Za-z0-9_.-]{20,8192})$/i)?.[1];
-  if (!token)
+  const authHeader = request.headers.get("authorization");
+  if (!authHeader)
     throw new HttpError(401, "UNAUTHENTICATED", "Please sign in to continue.");
+  const match = authHeader.match(/^Bearer ([A-Za-z0-9_.-]{20,8192})$/i);
+  if (!match) {
+    console.error(
+      JSON.stringify({
+        event: "token_verify_failed",
+        reason: "missing_or_malformed_authorization_header",
+        headerPrefix: authHeader.slice(0, 30),
+      }),
+    );
+    throw new HttpError(401, "UNAUTHENTICATED", "Please sign in to continue.");
+  }
+  const token = match[1];
+  console.error(
+    JSON.stringify({
+      event: "token_received",
+      tokenPreview: `${token.slice(0, 16)}...${token.slice(-16)}`,
+      tokenLength: token.length,
+    }),
+  );
   const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
   if (!projectId)
     throw new HttpError(
